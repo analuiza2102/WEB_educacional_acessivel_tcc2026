@@ -1,0 +1,280 @@
+/* High contrast mode */
+.high-contrast {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #000000;
+  --card-foreground: #ffffff;
+  --popover: #000000;
+  --popover-foreground: #ffffff;
+  --primary: #ffd600;
+  --primary-foreground: #000000;
+  --secondary: #ffffff;
+  --secondary-foreground: #000000;
+  --muted: #000000;
+  --muted-foreground: #ffffff;
+  --accent: #ffd600;
+  --accent-foreground: #000000;
+  --border: #ffffff;
+  --input: #ffffff;
+  --input-background: #000000;
+  --ring: #ffd600;
+}
+
+.high-contrast *:focus {
+  outline: 3px solid #ffd600 !important;
+  outline-offset: 2px;
+}
+
+.high-contrast body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast .app-header,
+.high-contrast .mobile-nav,
+.high-contrast .surface-section,
+.high-contrast .hero-section,
+.high-contrast .cta-section,
+.high-contrast .info-card,
+.high-contrast .feature-card {
+  background: #000000 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.high-contrast [class*='bg-gray-50'],
+.high-contrast [class*='bg-white'],
+.high-contrast [class*='bg-blue-50'],
+.high-contrast [class*='bg-green-50'],
+.high-contrast [class*='bg-purple-50'] {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  background-image: none !important;
+}
+
+.high-contrast [class*='from-blue-600'],
+.high-contrast [class*='to-blue-800'],
+.high-contrast [class*='bg-blue-600'],
+.high-contrast [class*='bg-green-600'],
+.high-contrast [class*='bg-purple-600'] {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  background-image: none !important;
+}
+
+.high-contrast [class*='bg-gray-200'],
+.high-contrast [class*='bg-gray-100'] {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+.high-contrast [class*='bg-blue-100'],
+.high-contrast [class*='bg-green-100'],
+.high-contrast [class*='bg-purple-100'] {
+  background: #000000 !important;
+  color: #ffd600 !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast .brand-mark,
+.high-contrast .step-number,
+.high-contrast .highlight-icon {
+  background: #000000 !important;
+  color: #ffd600 !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast .brand-text,
+.high-contrast .section-title,
+.high-contrast .card-title,
+.high-contrast .card-body,
+.high-contrast .feature-list,
+.high-contrast .hero-lead,
+.high-contrast .cta-lead,
+.high-contrast .mobile-menu-toggle,
+.high-contrast [class*='text-gray-900'],
+.high-contrast [class*='text-gray-700'],
+.high-contrast [class*='text-gray-600'],
+.high-contrast [class*='text-gray-800'],
+.high-contrast [class*='text-blue-100'],
+.high-contrast [class*='text-green-100'],
+.high-contrast [class*='text-purple-100'],
+.high-contrast [class*='text-blue-900'],
+.high-contrast [class*='text-green-900'],
+.high-contrast [class*='text-purple-900'] {
+  color: #ffffff !important;
+}
+
+.high-contrast .step-icon,
+.high-contrast .highlight-icon svg,
+.high-contrast .feature-list svg,
+.high-contrast [class*='text-blue-600'],
+.high-contrast [class*='text-green-600'],
+.high-contrast [class*='text-purple-600'],
+.high-contrast [class*='text-blue-800'],
+.high-contrast [class*='text-green-800'],
+.high-contrast [class*='text-purple-800'] {
+  color: #ffd600 !important;
+}
+
+.high-contrast [class*='border-gray-200'],
+.high-contrast [class*='border-gray-300'],
+.high-contrast [class*='border-blue-200'],
+.high-contrast [class*='border-green-200'],
+.high-contrast [class*='border-purple-200'] {
+  border-color: #ffffff !important;
+}
+
+.high-contrast input,
+.high-contrast select,
+.high-contrast textarea {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast input::placeholder,
+.high-contrast textarea::placeholder {
+  color: #ffffff !important;
+  opacity: 0.85;
+}
+
+.high-contrast option {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast a {
+  color: #ffd600 !important;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.high-contrast .site-nav-link,
+.high-contrast .contrast-toggle,
+.high-contrast .mobile-menu-toggle,
+.high-contrast .hero-primary-cta,
+.high-contrast .hero-secondary-cta,
+.high-contrast .feature-link {
+  text-decoration: none !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast .site-nav-link,
+.high-contrast .mobile-menu-toggle {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast .site-nav-link:hover,
+.high-contrast .site-nav-link:focus-visible,
+.high-contrast .mobile-menu-toggle:hover,
+.high-contrast .mobile-menu-toggle:focus-visible,
+.high-contrast .feature-link:hover,
+.high-contrast .feature-link:focus-visible {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+.high-contrast .site-nav-link[aria-current='page'],
+.high-contrast .contrast-toggle[aria-pressed='true'],
+.high-contrast .hero-primary-cta {
+  background: #ffd600 !important;
+  color: #000000 !important;
+  border-color: #ffffff !important;
+}
+
+.high-contrast .contrast-toggle,
+.high-contrast .hero-secondary-cta,
+.high-contrast .feature-link {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border-color: #ffd600 !important;
+}
+
+.high-contrast a[class*='bg-gray-200'],
+.high-contrast button[class*='bg-gray-200'] {
+  background: #000000 !important;
+  color: #ffd600 !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast a[class*='bg-blue-600'],
+.high-contrast a[class*='bg-green-600'],
+.high-contrast a[class*='bg-purple-600'],
+.high-contrast button[class*='bg-blue-600'],
+.high-contrast button[class*='bg-green-600'],
+.high-contrast button[class*='bg-purple-600'] {
+  background: #ffd600 !important;
+  color: #000000 !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast a[class*='bg-blue-600'] svg,
+.high-contrast a[class*='bg-green-600'] svg,
+.high-contrast a[class*='bg-purple-600'] svg,
+.high-contrast button[class*='bg-blue-600'] svg,
+.high-contrast button[class*='bg-green-600'] svg,
+.high-contrast button[class*='bg-purple-600'] svg,
+.high-contrast a[class*='bg-gray-200'] svg,
+.high-contrast button[class*='bg-gray-200'] svg {
+  color: currentColor !important;
+}
+
+.high-contrast .contrast-toggle:hover,
+.high-contrast .contrast-toggle:focus-visible,
+.high-contrast .hero-primary-cta:hover,
+.high-contrast .hero-primary-cta:focus-visible,
+.high-contrast .hero-secondary-cta:hover,
+.high-contrast .hero-secondary-cta:focus-visible {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+.high-contrast .hero-secondary-cta:hover,
+.high-contrast .hero-secondary-cta:focus-visible {
+  background: #ffffff !important;
+  color: #000000 !important;
+}
+
+.high-contrast button,
+.high-contrast [role='button'] {
+  border-color: #ffffff !important;
+}
+
+.skip-to-main {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+  padding: 1rem 1.5rem;
+  background-color: #000;
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.skip-to-main:focus {
+  left: 50%;
+  top: 1rem;
+  transform: translateX(-50%);
+}
+
+*:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  button,
+  a,
+  input[type='checkbox'],
+  input[type='radio'] {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
