@@ -21,7 +21,7 @@
 import { ScrapedVestibularData, ScrapingResult, ScraperSource } from './types';
 
 class VestibularScraperService {
-  private readonly USER_AGENT = 'EducaAcesso/1.0 (Bot educacional; contato@educaacesso.com)';
+  private readonly USER_AGENT = 'EducaAcesso/1.0 (Projeto academico de TCC)';
   private readonly DELAY_BETWEEN_REQUESTS = 2000; // 2 segundos entre requisições
 
   /**

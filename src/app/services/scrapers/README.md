@@ -304,7 +304,7 @@ async function scrapDynamicSite() {
 
 ```typescript
 class EthicalScraper {
-  private readonly USER_AGENT = 'EducaAcesso/1.0 (Bot educacional; contato@educaacesso.com)';
+  private readonly USER_AGENT = 'EducaAcesso/1.0 (Projeto academico de TCC)';
   private readonly DELAY_MS = 2000;
   
   async scrape(url: string) {
@@ -430,7 +430,7 @@ async function alertOnFailure(error: Error) {
   // Opção 1: Email via Supabase Edge Functions
   await supabase.functions.invoke('send-email', {
     body: {
-      to: 'admin@educaacesso.com',
+      to: 'email-institucional-exemplo@dominio.com',
       subject: 'Erro no scraping de dados',
       text: `Erro: ${error.message}`
     }

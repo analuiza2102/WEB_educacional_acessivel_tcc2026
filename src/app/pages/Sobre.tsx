@@ -3,7 +3,6 @@ import { Heart, Target, Users, Shield } from 'lucide-react';
 export function Sobre() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-blue-600 text-white py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">Sobre o EDUCA ACESSO</h1>
@@ -14,7 +13,6 @@ export function Sobre() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Mission */}
         <section className="bg-white rounded-lg border-2 border-gray-200 p-8 mb-8" aria-labelledby="missao-title">
           <div className="flex items-start gap-4 mb-4">
             <div className="bg-blue-100 p-3 rounded-lg">
@@ -31,7 +29,6 @@ export function Sobre() {
           </div>
         </section>
 
-        {/* What We Do */}
         <section className="bg-white rounded-lg border-2 border-gray-200 p-8 mb-8" aria-labelledby="fazemos-title">
           <div className="flex items-start gap-4 mb-4">
             <div className="bg-green-100 p-3 rounded-lg">
@@ -43,23 +40,22 @@ export function Sobre() {
               </h2>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  Centralizamos informações sobre vestibulares públicos e cursos gratuitos, tornando mais fácil para você encontrar e acessar oportunidades educacionais.
+                  Centralizamos informações sobre vestibulares públicos e cursos gratuitos, tornando mais fácil encontrar e acessar oportunidades educacionais.
                 </p>
                 <p>
-                  Nosso diferencial é a <strong>acessibilidade</strong>. Seguimos as diretrizes internacionais WCAG 2.1 para garantir que nosso sistema possa ser usado por pessoas com diferentes tipos de deficiência, incluindo:
+                  Nosso diferencial é a <strong>acessibilidade</strong>. Seguimos as diretrizes internacionais WCAG 2.1 para garantir que o sistema possa ser usado por pessoas com diferentes necessidades, incluindo:
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-4">
-                  <li>Deficiência visual (compatível com leitores de tela)</li>
-                  <li>Deficiência motora (navegação completa por teclado)</li>
-                  <li>Baixa visão (modo de alto contraste)</li>
-                  <li>Deficiência cognitiva (design simples e claro)</li>
+                  <li>Deficiência visual, com compatibilidade com leitores de tela</li>
+                  <li>Deficiência motora, com navegação completa por teclado</li>
+                  <li>Baixa visão, com modo de alto contraste</li>
+                  <li>Deficiência cognitiva, com design simples e claro</li>
                 </ul>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Who We Serve */}
         <section className="bg-white rounded-lg border-2 border-gray-200 p-8 mb-8" aria-labelledby="publico-title">
           <div className="flex items-start gap-4 mb-4">
             <div className="bg-purple-100 p-3 rounded-lg">
@@ -71,31 +67,31 @@ export function Sobre() {
               </h2>
               <div className="space-y-4 text-gray-700">
                 <p>
-                  Nosso sistema foi desenvolvido pensando especialmente em:
+                  O sistema foi desenvolvido pensando especialmente em:
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h3 className="font-bold text-gray-900 mb-2">Estudantes de Baixa Renda</h3>
                     <p className="text-sm">
-                      Facilitamos o acesso a informações sobre isenções de taxa e programas de apoio
+                      Facilita o acesso a informações sobre isenções de taxa e programas de apoio.
                     </p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h3 className="font-bold text-gray-900 mb-2">Pessoas com Deficiência</h3>
                     <p className="text-sm">
-                      Interface totalmente acessível seguindo padrões internacionais
+                      Interface acessível seguindo padrões internacionais.
                     </p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h3 className="font-bold text-gray-900 mb-2">Idosos</h3>
                     <p className="text-sm">
-                      Design simples e intuitivo, com textos claros e botões grandes
+                      Design simples e intuitivo, com textos claros e botões grandes.
                     </p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h3 className="font-bold text-gray-900 mb-2">Primeiros Acessos</h3>
                     <p className="text-sm">
-                      Guias passo a passo detalhados para quem nunca se inscreveu em vestibulares
+                      Guias passo a passo para quem nunca se inscreveu em vestibulares.
                     </p>
                   </div>
                 </div>
@@ -104,7 +100,6 @@ export function Sobre() {
           </div>
         </section>
 
-        {/* Principles */}
         <section className="bg-white rounded-lg border-2 border-gray-200 p-8 mb-8" aria-labelledby="principios-title">
           <div className="flex items-start gap-4 mb-4">
             <div className="bg-orange-100 p-3 rounded-lg">
@@ -118,25 +113,25 @@ export function Sobre() {
                 <div className="border-l-4 border-blue-600 pl-4">
                   <h3 className="font-bold text-gray-900 mb-2">Inclusão Digital</h3>
                   <p className="text-gray-700">
-                    Desenvolvemos nossa plataforma para ser usada por todos, sem exceção
+                    A plataforma foi pensada para ser usada por todos, com atenção à acessibilidade.
                   </p>
                 </div>
                 <div className="border-l-4 border-green-600 pl-4">
                   <h3 className="font-bold text-gray-900 mb-2">Informação Clara</h3>
                   <p className="text-gray-700">
-                    Apresentamos as informações de forma simples, direta e organizada
+                    As informações são apresentadas de forma simples, direta e organizada.
                   </p>
                 </div>
                 <div className="border-l-4 border-purple-600 pl-4">
                   <h3 className="font-bold text-gray-900 mb-2">Segurança</h3>
                   <p className="text-gray-700">
-                    Redirecionamos apenas para sites oficiais de instituições confiáveis
+                    O projeto prioriza links e referências oficiais para consulta dos usuários.
                   </p>
                 </div>
                 <div className="border-l-4 border-orange-600 pl-4">
                   <h3 className="font-bold text-gray-900 mb-2">Gratuidade</h3>
                   <p className="text-gray-700">
-                    Nosso serviço é 100% gratuito e sempre será
+                    O conteúdo tem caráter informativo e gratuito.
                   </p>
                 </div>
               </div>
@@ -144,24 +139,11 @@ export function Sobre() {
           </div>
         </section>
 
-        {/* Contact CTA */}
         <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold mb-4">Fale Conosco</h2>
-          <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-            Tem sugestões, dúvidas ou encontrou algum problema de acessibilidade? Entre em contato conosco!
+          <h2 className="text-2xl font-bold mb-4">Projeto Acadêmico</h2>
+          <p className="text-blue-100 max-w-2xl mx-auto">
+            Este site foi desenvolvido exclusivamente para fins acadêmicos, como parte de um Trabalho de Conclusão de Curso. As informações exibidas têm finalidade demonstrativa e educacional para apresentação do TCC.
           </p>
-          <div className="space-y-2">
-            <p>
-              <a href="mailto:contato@educaacesso.gov.br" className="text-white hover:text-blue-100 underline focus:outline-none focus:ring-2 focus:ring-white rounded px-1">
-                contato@educaacesso.gov.br
-              </a>
-            </p>
-            <p>
-              <a href="tel:0800123456" className="text-white hover:text-blue-100 underline focus:outline-none focus:ring-2 focus:ring-white rounded px-1">
-                0800 123 456
-              </a>
-            </p>
-          </div>
         </div>
       </div>
     </div>
