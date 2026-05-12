@@ -1,33 +1,48 @@
-/**
- * Cursos Service
- *
- * This service provides an abstraction layer for fetching curso data.
- * Currently uses mock data, but can be easily replaced with Supabase calls.
- *
- * Future Supabase Integration:
- * - Replace mock data imports with Supabase client
- * - Use supabase.from('cursos').select()
- * - Add proper error handling and loading states
- */
-
-import { cursos } from '../../data/mockData';
+import { supabase } from '../supabaseClient';
 import { Curso, CursoFilters, ApiResponse } from './types';
 
+type CursoRow = {
+  id: string;
+  nome: string | null;
+  plataforma: string | null;
+  area: string | null;
+  gratuito: boolean | null;
+  duracao: string | null;
+  nivel: string | null;
+  descricao: string | null;
+  link: string | null;
+};
+
+function mapCurso(row: CursoRow): Curso {
+  return {
+    id: row.id,
+    nome: row.nome ?? '',
+    plataforma: row.plataforma ?? '',
+    area: row.area ?? '',
+    gratuito: row.gratuito ?? false,
+    duracao: row.duracao ?? '',
+    nivel: row.nivel ?? '',
+    descricao: row.descricao ?? '',
+    link: row.link ?? ''
+  };
+}
+
 class CursosService {
-  /**
-   * Fetch all cursos
-   *
-   * Future Supabase implementation:
-   * const { data, error } = await supabase
-   *   .from('cursos')
-   *   .select('*')
-   *   .order('nome');
-   */
   async getAllCursos(): Promise<ApiResponse<Curso[]>> {
     try {
-      // Simulate async API call
-      await this.simulateDelay();
-      return { data: cursos };
+      if (!supabase) {
+        return { data: [], error: 'Supabase não configurado' };
+      }
+
+      const { data, error } = await supabase
+        .from('cursos')
+        .select('id, nome, plataforma, area, gratuito, duracao, nivel, descricao, link')
+        .eq('status', 'published')
+        .order('nome');
+
+      if (error) throw error;
+
+      return { data: (data ?? []).map(mapCurso) };
     } catch (error) {
       return {
         data: [],
@@ -36,21 +51,22 @@ class CursosService {
     }
   }
 
-  /**
-   * Fetch curso by ID
-   *
-   * Future Supabase implementation:
-   * const { data, error } = await supabase
-   *   .from('cursos')
-   *   .select('*')
-   *   .eq('id', id)
-   *   .single();
-   */
   async getCursoById(id: string): Promise<ApiResponse<Curso | null>> {
     try {
-      await this.simulateDelay();
-      const curso = cursos.find(c => c.id === id);
-      return { data: curso || null };
+      if (!supabase) {
+        return { data: null, error: 'Supabase não configurado' };
+      }
+
+      const { data, error } = await supabase
+        .from('cursos')
+        .select('id, nome, plataforma, area, gratuito, duracao, nivel, descricao, link')
+        .eq('id', id)
+        .eq('status', 'published')
+        .maybeSingle();
+
+      if (error) throw error;
+
+      return { data: data ? mapCurso(data) : null };
     } catch (error) {
       return {
         data: null,
@@ -59,48 +75,31 @@ class CursosService {
     }
   }
 
-  /**
-   * Filter cursos based on criteria
-   *
-   * Future Supabase implementation:
-   * let query = supabase.from('cursos').select('*');
-   * if (filters.area) query = query.eq('area', filters.area);
-   * if (filters.gratuito !== undefined) query = query.eq('gratuito', filters.gratuito);
-   * if (filters.searchTerm) query = query.ilike('nome', `%${filters.searchTerm}%`);
-   * const { data, error } = await query;
-   */
   async filterCursos(filters: CursoFilters): Promise<ApiResponse<Curso[]>> {
     try {
-      await this.simulateDelay();
-
-      let filtered = [...cursos];
-
-      if (filters.area) {
-        filtered = filtered.filter(c => c.area === filters.area);
+      if (!supabase) {
+        return { data: [], error: 'Supabase não configurado' };
       }
 
-      if (filters.plataforma) {
-        filtered = filtered.filter(c => c.plataforma === filters.plataforma);
-      }
+      let query = supabase
+        .from('cursos')
+        .select('id, nome, plataforma, area, gratuito, duracao, nivel, descricao, link')
+        .eq('status', 'published');
 
-      if (filters.nivel) {
-        filtered = filtered.filter(c => c.nivel === filters.nivel);
-      }
-
-      if (filters.gratuito !== undefined) {
-        filtered = filtered.filter(c => c.gratuito === filters.gratuito);
-      }
-
+      if (filters.area) query = query.eq('area', filters.area);
+      if (filters.plataforma) query = query.eq('plataforma', filters.plataforma);
+      if (filters.nivel) query = query.eq('nivel', filters.nivel);
+      if (filters.gratuito !== undefined) query = query.eq('gratuito', filters.gratuito);
       if (filters.searchTerm) {
-        const searchLower = filters.searchTerm.toLowerCase();
-        filtered = filtered.filter(c =>
-          c.nome.toLowerCase().includes(searchLower) ||
-          c.descricao.toLowerCase().includes(searchLower) ||
-          c.plataforma.toLowerCase().includes(searchLower)
-        );
+        const term = filters.searchTerm.replace(/[%_]/g, '\\$&');
+        query = query.or(`nome.ilike.%${term}%,descricao.ilike.%${term}%,plataforma.ilike.%${term}%`);
       }
 
-      return { data: filtered };
+      const { data, error } = await query.order('nome');
+
+      if (error) throw error;
+
+      return { data: (data ?? []).map(mapCurso) };
     } catch (error) {
       return {
         data: [],
@@ -109,20 +108,12 @@ class CursosService {
     }
   }
 
-  /**
-   * Get unique areas from cursos
-   *
-   * Future Supabase implementation:
-   * const { data, error } = await supabase
-   *   .from('cursos')
-   *   .select('area')
-   *   .order('area');
-   * return [...new Set(data.map(c => c.area))];
-   */
   async getAreas(): Promise<ApiResponse<string[]>> {
     try {
-      await this.simulateDelay();
-      const areas = [...new Set(cursos.map(c => c.area))].sort();
+      const { data, error } = await this.getAllCursos();
+      if (error) return { data: [], error };
+
+      const areas = [...new Set(data.map(curso => curso.area).filter(Boolean))].sort();
       return { data: areas };
     } catch (error) {
       return {
@@ -132,20 +123,12 @@ class CursosService {
     }
   }
 
-  /**
-   * Get unique plataformas from cursos
-   *
-   * Future Supabase implementation:
-   * const { data, error } = await supabase
-   *   .from('cursos')
-   *   .select('plataforma')
-   *   .order('plataforma');
-   * return [...new Set(data.map(c => c.plataforma))];
-   */
   async getPlataformas(): Promise<ApiResponse<string[]>> {
     try {
-      await this.simulateDelay();
-      const plataformas = [...new Set(cursos.map(c => c.plataforma))].sort();
+      const { data, error } = await this.getAllCursos();
+      if (error) return { data: [], error };
+
+      const plataformas = [...new Set(data.map(curso => curso.plataforma).filter(Boolean))].sort();
       return { data: plataformas };
     } catch (error) {
       return {
@@ -154,15 +137,6 @@ class CursosService {
       };
     }
   }
-
-  /**
-   * Simulate network delay for development
-   * Remove this in production with real API
-   */
-  private simulateDelay(): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, 100));
-  }
 }
 
-// Export singleton instance
 export const cursosService = new CursosService();

@@ -48,9 +48,10 @@ export function BancoProvas() {
 
   const handleDownload = async (prova: Prova) => {
     await provasService.incrementDownloadCount(prova.id);
-    // Redirecionar para URL oficial
-    if (prova.urlOficial) {
-      window.open(prova.urlOficial, '_blank', 'noopener,noreferrer');
+    const provaUrl = prova.urlArquivo ?? prova.urlOficial;
+
+    if (provaUrl) {
+      window.open(provaUrl, '_blank', 'noopener,noreferrer');
     }
   };
 

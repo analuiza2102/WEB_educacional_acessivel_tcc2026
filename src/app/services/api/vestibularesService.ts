@@ -1,33 +1,56 @@
-/**
- * Vestibulares Service
- *
- * This service provides an abstraction layer for fetching vestibular data.
- * Currently uses mock data, but can be easily replaced with Supabase calls.
- *
- * Future Supabase Integration:
- * - Replace mock data imports with Supabase client
- * - Use supabase.from('vestibulares').select()
- * - Add proper error handling and loading states
- */
-
-import { vestibulares } from '../../data/mockData';
+import { supabase } from '../supabaseClient';
 import { Vestibular, VestibularFilters, ApiResponse } from './types';
 
+type VestibularRow = {
+  id: string;
+  nome: string | null;
+  tipo: string | null;
+  nivel: string | null;
+  prazo: string | null;
+  inscricoes_abertas: boolean | null;
+  isencao_disponivel: boolean | null;
+  acessibilidade: string[] | null;
+  descricao: string | null;
+  passos: string[] | null;
+  documentos: string[] | null;
+  datas: { evento: string; data: string }[] | null;
+  link_oficial: string | null;
+};
+
+function mapVestibular(row: VestibularRow): Vestibular {
+  return {
+    id: row.id,
+    nome: row.nome ?? '',
+    tipo: row.tipo ?? '',
+    nivel: row.nivel ?? '',
+    prazo: row.prazo ?? '',
+    inscricoesAbertas: row.inscricoes_abertas ?? false,
+    isencaoDisponivel: row.isencao_disponivel ?? false,
+    acessibilidade: row.acessibilidade ?? [],
+    descricao: row.descricao ?? '',
+    passos: row.passos ?? [],
+    documentos: row.documentos ?? [],
+    datas: Array.isArray(row.datas) ? row.datas : [],
+    linkOficial: row.link_oficial ?? ''
+  };
+}
+
 class VestibularesService {
-  /**
-   * Fetch all vestibulares
-   *
-   * Future Supabase implementation:
-   * const { data, error } = await supabase
-   *   .from('vestibulares')
-   *   .select('*')
-   *   .order('nome');
-   */
   async getAllVestibulares(): Promise<ApiResponse<Vestibular[]>> {
     try {
-      // Simulate async API call
-      await this.simulateDelay();
-      return { data: vestibulares };
+      if (!supabase) {
+        return { data: [], error: 'Supabase não configurado' };
+      }
+
+      const { data, error } = await supabase
+        .from('vestibulares')
+        .select('id, nome, tipo, nivel, prazo, inscricoes_abertas, isencao_disponivel, acessibilidade, descricao, passos, documentos, datas, link_oficial')
+        .eq('status', 'published')
+        .order('nome');
+
+      if (error) throw error;
+
+      return { data: (data ?? []).map(mapVestibular) };
     } catch (error) {
       return {
         data: [],
@@ -36,21 +59,22 @@ class VestibularesService {
     }
   }
 
-  /**
-   * Fetch vestibular by ID
-   *
-   * Future Supabase implementation:
-   * const { data, error } = await supabase
-   *   .from('vestibulares')
-   *   .select('*')
-   *   .eq('id', id)
-   *   .single();
-   */
   async getVestibularById(id: string): Promise<ApiResponse<Vestibular | null>> {
     try {
-      await this.simulateDelay();
-      const vestibular = vestibulares.find(v => v.id === id);
-      return { data: vestibular || null };
+      if (!supabase) {
+        return { data: null, error: 'Supabase não configurado' };
+      }
+
+      const { data, error } = await supabase
+        .from('vestibulares')
+        .select('id, nome, tipo, nivel, prazo, inscricoes_abertas, isencao_disponivel, acessibilidade, descricao, passos, documentos, datas, link_oficial')
+        .eq('id', id)
+        .eq('status', 'published')
+        .maybeSingle();
+
+      if (error) throw error;
+
+      return { data: data ? mapVestibular(data) : null };
     } catch (error) {
       return {
         data: null,
@@ -59,38 +83,31 @@ class VestibularesService {
     }
   }
 
-  /**
-   * Filter vestibulares based on criteria
-   *
-   * Future Supabase implementation:
-   * let query = supabase.from('vestibulares').select('*');
-   * if (filters.tipo) query = query.eq('tipo', filters.tipo);
-   * if (filters.inscricoesAbertas) query = query.eq('inscricoesAbertas', true);
-   * const { data, error } = await query;
-   */
   async filterVestibulares(filters: VestibularFilters): Promise<ApiResponse<Vestibular[]>> {
     try {
-      await this.simulateDelay();
-
-      let filtered = [...vestibulares];
-
-      if (filters.tipo) {
-        filtered = filtered.filter(v => v.tipo === filters.tipo);
+      if (!supabase) {
+        return { data: [], error: 'Supabase não configurado' };
       }
 
-      if (filters.nivel) {
-        filtered = filtered.filter(v => v.nivel === filters.nivel);
-      }
+      let query = supabase
+        .from('vestibulares')
+        .select('id, nome, tipo, nivel, prazo, inscricoes_abertas, isencao_disponivel, acessibilidade, descricao, passos, documentos, datas, link_oficial')
+        .eq('status', 'published');
 
+      if (filters.tipo) query = query.eq('tipo', filters.tipo);
+      if (filters.nivel) query = query.eq('nivel', filters.nivel);
       if (filters.inscricoesAbertas !== undefined) {
-        filtered = filtered.filter(v => v.inscricoesAbertas === filters.inscricoesAbertas);
+        query = query.eq('inscricoes_abertas', filters.inscricoesAbertas);
       }
-
       if (filters.isencaoDisponivel !== undefined) {
-        filtered = filtered.filter(v => v.isencaoDisponivel === filters.isencaoDisponivel);
+        query = query.eq('isencao_disponivel', filters.isencaoDisponivel);
       }
 
-      return { data: filtered };
+      const { data, error } = await query.order('nome');
+
+      if (error) throw error;
+
+      return { data: (data ?? []).map(mapVestibular) };
     } catch (error) {
       return {
         data: [],
@@ -99,25 +116,23 @@ class VestibularesService {
     }
   }
 
-  /**
-   * Search vestibulares by name
-   *
-   * Future Supabase implementation:
-   * const { data, error } = await supabase
-   *   .from('vestibulares')
-   *   .select('*')
-   *   .ilike('nome', `%${searchTerm}%`);
-   */
   async searchVestibulares(searchTerm: string): Promise<ApiResponse<Vestibular[]>> {
     try {
-      await this.simulateDelay();
+      if (!supabase) {
+        return { data: [], error: 'Supabase não configurado' };
+      }
 
-      const filtered = vestibulares.filter(v =>
-        v.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        v.descricao.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const term = searchTerm.replace(/[%_]/g, '\\$&');
+      const { data, error } = await supabase
+        .from('vestibulares')
+        .select('id, nome, tipo, nivel, prazo, inscricoes_abertas, isencao_disponivel, acessibilidade, descricao, passos, documentos, datas, link_oficial')
+        .eq('status', 'published')
+        .or(`nome.ilike.%${term}%,descricao.ilike.%${term}%`)
+        .order('nome');
 
-      return { data: filtered };
+      if (error) throw error;
+
+      return { data: (data ?? []).map(mapVestibular) };
     } catch (error) {
       return {
         data: [],
@@ -125,15 +140,6 @@ class VestibularesService {
       };
     }
   }
-
-  /**
-   * Simulate network delay for development
-   * Remove this in production with real API
-   */
-  private simulateDelay(): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, 100));
-  }
 }
 
-// Export singleton instance
 export const vestibularesService = new VestibularesService();
