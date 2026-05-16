@@ -6,7 +6,8 @@
   "packageManager": "pnpm@11.0.9",
   "scripts": {
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "scrape:ev-bradesco": "node data-pipeline/scrapers/evBradescoScraper.js"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
