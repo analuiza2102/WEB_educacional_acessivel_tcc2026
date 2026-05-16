@@ -1,31 +1,31 @@
 # Data Pipeline
 
-Este diretório reúne scripts locais de coleta e curadoria de dados para o projeto Web Educacional Acessível.
+This directory contains local scraping and curation scripts for the Web Educacional Acessivel project.
 
-O primeiro scraper coleta cursos gratuitos da Escola Virtual Fundação Bradesco e salva os registros na tabela `cursos` do Supabase com `status = 'pending_review'`.
+The first scraper collects free courses from Escola Virtual Fundacao Bradesco and saves them into the Supabase `cursos` table with `status = 'pending_review'`.
 
-## Por Que Pending Review
+## Why Pending Review
 
-O scraper não publica cursos automaticamente. Todo dado coletado entra como `pending_review` para permitir revisão humana no Supabase antes de aparecer no site.
+The scraper never publishes courses automatically. Every collected record is saved as `pending_review` so a human can review it in Supabase before it appears on the site.
 
-Fluxo correto:
+Correct flow:
 
 ```text
-scraper -> pending_review -> revisão humana -> published
+scraper -> pending_review -> human review -> published
 ```
 
-## Configuração
+## Configuration
 
-Crie um arquivo `.env` na raiz do projeto:
+Create a `.env` file in the project root:
 
 ```env
 SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-Use a `SUPABASE_SERVICE_ROLE_KEY` apenas em scripts locais dentro de `data-pipeline`. Nunca coloque essa chave no front-end, em arquivos Vite com prefixo `VITE_`, nem em código público do React.
+Use `SUPABASE_SERVICE_ROLE_KEY` only in local scripts inside `data-pipeline`. Never place this key in the front-end, in Vite variables with the `VITE_` prefix, or in public React code.
 
-Antes de rodar o scraper, execute no Supabase SQL Editor:
+Before running the scraper, execute this SQL in the Supabase SQL Editor:
 
 ```sql
 alter table public.cursos
@@ -44,36 +44,61 @@ alter table public.cursos
 add column if not exists last_checked_at timestamp with time zone;
 ```
 
-O mesmo SQL está em `data-pipeline/sql/alter_cursos_for_scraper.sql`.
+The same SQL is available at `data-pipeline/sql/alter_cursos_for_scraper.sql`.
 
-## Como Rodar
+## How To Run
 
 ```bash
 node data-pipeline/scrapers/evBradescoScraper.js
 ```
 
-O script mostra:
+The script prints:
 
-- quantidade de cursos encontrados;
-- quantidade de cursos válidos;
-- quantidade importada/atualizada;
-- os 3 primeiros cursos extraídos para conferência.
+- number of courses found;
+- number of valid courses;
+- number of inserted or updated rows;
+- the first 3 extracted courses for quick review.
 
-## Scrapers Específicos
+## Automation With GitHub Actions
 
-Não usamos scraper genérico universal. Cada site terá um scraper próprio, porque cada fonte tem HTML, paginação, filtros e regras diferentes.
+The workflow lives at `.github/workflows/ev-bradesco-scraper.yml`.
 
-O que deve ser compartilhado entre scrapers:
+It runs:
 
-- conexão com Supabase;
-- funções de normalização;
+- every Monday and Thursday at 11:00 UTC;
+- manually from the Actions tab with `workflow_dispatch`.
+
+It uses these GitHub Secrets:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+The workflow runs:
+
+```bash
+pnpm scrape:ev-bradesco
+```
+
+All imported courses must continue to enter as `pending_review`.
+
+Never place `SUPABASE_SERVICE_ROLE_KEY` in the front-end.
+Never commit `.env` or `.env.local`.
+
+## Site-Specific Scrapers
+
+We do not use a universal scraper. Each source should have its own scraper because each site has different HTML, pagination, filters, and rules.
+
+What should be shared across scrapers:
+
+- Supabase connection;
+- normalization helpers;
 - logs;
-- validação;
-- formato final dos dados.
+- validation;
+- the final data format.
 
-## Automações Futuras
+## Future Automation
 
-- verificação de links quebrados;
-- atualização de prazos vencidos;
-- scrapers específicos para outros sites;
-- importação de provas do INEP/Gov.br.
+- broken link checks;
+- updates for expired deadlines;
+- source-specific scrapers for other sites;
+- importing exams from INEP and Gov.br.
