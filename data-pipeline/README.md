@@ -19,6 +19,8 @@ scraper -> pending_review -> human review -> published
 
 Every imported row must stay as `pending_review` until someone reviews it in Supabase.
 
+If a row already exists in the database, the scraper preserves the current `status` instead of forcing it back to `pending_review`. Only brand-new rows enter as `pending_review`.
+
 ## Configuration
 
 Create a `.env` file in the project root:

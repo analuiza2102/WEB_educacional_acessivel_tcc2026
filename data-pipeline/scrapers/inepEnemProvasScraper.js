@@ -2,6 +2,7 @@ import { mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { cleanText, normalizeProva, slugify } from '../normalizers/enemProvaNormalizer.js';
+import { preserveExistingStatus } from '../utils/preserveExistingStatus.js';
 import { supabaseAdmin } from '../utils/supabaseAdmin.js';
 import { validateProva } from '../validators/validateProva.js';
 
@@ -318,15 +319,18 @@ async function collectLinksForYear(page, year) {
 async function saveProvas(rows) {
   if (rows.length === 0) return [];
 
+  const { rows: rowsToUpsert, preservedCount, newCount } = await preserveExistingStatus('provas', rows);
   const { data, error } = await supabaseAdmin
     .from('provas')
-    .upsert(rows, { onConflict: 'slug' })
+    .upsert(rowsToUpsert, { onConflict: 'slug' })
     .select();
 
   if (error) {
     throw new Error(`Erro ao salvar provas no Supabase: ${error.message}`);
   }
 
+  console.log(`Provas novas: ${newCount}`);
+  console.log(`Provas com status preservado: ${preservedCount}`);
   return data ?? [];
 }
 
