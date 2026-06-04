@@ -13,6 +13,7 @@ const YEARS_TO_SCRAPE = [];
 const DEBUG_SCREENSHOT_PATH = 'data-pipeline/debug/inep-enem-page.png';
 const NAVIGATION_TIMEOUT_MS = 90000;
 const NAVIGATION_RETRIES = 3;
+const FIRST_ENEM_YEAR = 1998;
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -221,6 +222,17 @@ async function getYearTabs(page) {
   });
 }
 
+function getFallbackYears() {
+  const currentYear = new Date().getFullYear();
+  const years = [];
+
+  for (let year = currentYear; year >= FIRST_ENEM_YEAR; year -= 1) {
+    years.push(year);
+  }
+
+  return years;
+}
+
 async function activateYear(page, year) {
   const yearText = String(year);
 
@@ -265,7 +277,11 @@ function buildYearPageUrl(year) {
 async function collectLinksForYear(page, year) {
   const yearPageUrl = buildYearPageUrl(year);
 
-  await gotoWithRetry(page, yearPageUrl);
+  const response = await gotoWithRetry(page, yearPageUrl);
+  if (response && !response.ok()) {
+    console.warn(`Ano ${year} retornou status HTTP ${response.status()}. Pulando coleta desse ano.`);
+    return [];
+  }
   await delay(1200);
 
   return page.evaluate(
@@ -364,11 +380,21 @@ async function scrapeInepEnemProvas() {
   const rawLinks = [];
 
   try {
-    await gotoWithRetry(page, OFFICIAL_PAGE_URL);
-    await delay(2500);
+    let availableYears = [];
 
-    const detectedYears = await getYearTabs(page);
-    const availableYears = detectedYears.map(item => Number(item.text)).filter(Number.isFinite);
+    try {
+      await gotoWithRetry(page, OFFICIAL_PAGE_URL);
+      await delay(2500);
+
+      const detectedYears = await getYearTabs(page);
+      availableYears = detectedYears.map(item => Number(item.text)).filter(Number.isFinite);
+    } catch (error) {
+      console.warn(
+        `Nao foi possivel carregar a pagina indice do INEP. Usando fallback por anos conhecidos. Motivo: ${error.message}`
+      );
+      availableYears = getFallbackYears();
+    }
+
     const yearsToProcess =
       YEARS_TO_SCRAPE.length > 0
         ? YEARS_TO_SCRAPE.filter(year => availableYears.includes(year))
