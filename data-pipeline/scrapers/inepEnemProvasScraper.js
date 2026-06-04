@@ -14,6 +14,7 @@ const DEBUG_SCREENSHOT_PATH = 'data-pipeline/debug/inep-enem-page.png';
 const NAVIGATION_TIMEOUT_MS = 90000;
 const NAVIGATION_RETRIES = 3;
 const FIRST_ENEM_YEAR = 1998;
+const DISCOVER_YEARS_FROM_INDEX = false;
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -206,22 +207,6 @@ function pairNormalizedRows(rawLinks) {
   }));
 }
 
-async function getYearTabs(page) {
-  return page.evaluate(() => {
-    const candidates = [...document.querySelectorAll('button, a, [role="tab"], li, span')]
-      .map(element => ({
-        text: (element.textContent || '').trim(),
-        tagName: element.tagName.toLowerCase(),
-        ariaControls: element.getAttribute('aria-controls'),
-        href: element.getAttribute('href'),
-        id: element.id || null
-      }))
-      .filter(item => /^\d{4}$/.test(item.text));
-
-    return [...new Map(candidates.map(item => [item.text, item])).values()].sort((a, b) => Number(b.text) - Number(a.text));
-  });
-}
-
 function getFallbackYears() {
   const currentYear = new Date().getFullYear();
   const years = [];
@@ -231,43 +216,6 @@ function getFallbackYears() {
   }
 
   return years;
-}
-
-async function activateYear(page, year) {
-  const yearText = String(year);
-
-  const clicked = await page.evaluate(targetYear => {
-    const candidates = [...document.querySelectorAll('button, a, [role="tab"]')];
-
-    for (const element of candidates) {
-      const text = (element.textContent || '').trim();
-      if (text !== targetYear) continue;
-
-      element.scrollIntoView({ behavior: 'instant', block: 'center' });
-      element.click();
-      return true;
-    }
-
-    return false;
-  }, yearText);
-
-  if (!clicked) {
-    throw new Error(`Nao foi possivel ativar a aba do ano ${year}.`);
-  }
-
-  await delay(800);
-  await page.waitForFunction(
-    targetYear => {
-      const bodyText = document.body.innerText || '';
-      const loadingCount = [...document.querySelectorAll('.tab-content')]
-        .filter(node => (node.textContent || '').includes('Aguarde. Carregando'))
-        .length;
-
-      return bodyText.includes(targetYear) && loadingCount < 30;
-    },
-    yearText,
-    { timeout: 10000 }
-  ).catch(() => null);
 }
 
 function buildYearPageUrl(year) {
@@ -380,19 +328,25 @@ async function scrapeInepEnemProvas() {
   const rawLinks = [];
 
   try {
-    let availableYears = [];
+    let availableYears = getFallbackYears();
 
-    try {
-      await gotoWithRetry(page, OFFICIAL_PAGE_URL);
-      await delay(2500);
+    if (DISCOVER_YEARS_FROM_INDEX) {
+      try {
+        await gotoWithRetry(page, OFFICIAL_PAGE_URL);
+        await delay(2500);
 
-      const detectedYears = await getYearTabs(page);
-      availableYears = detectedYears.map(item => Number(item.text)).filter(Number.isFinite);
-    } catch (error) {
-      console.warn(
-        `Nao foi possivel carregar a pagina indice do INEP. Usando fallback por anos conhecidos. Motivo: ${error.message}`
-      );
-      availableYears = getFallbackYears();
+        availableYears = await page.evaluate(() => {
+          const candidates = [...document.querySelectorAll('button, a, [role="tab"], li, span')]
+            .map(element => Number((element.textContent || '').trim()))
+            .filter(Number.isFinite);
+
+          return [...new Set(candidates)].sort((a, b) => b - a);
+        });
+      } catch (error) {
+        console.warn(
+          `Nao foi possivel carregar a pagina indice do INEP. Usando fallback por anos conhecidos. Motivo: ${error.message}`
+        );
+      }
     }
 
     const yearsToProcess =
@@ -401,7 +355,7 @@ async function scrapeInepEnemProvas() {
         : availableYears;
 
     console.log(`Quantidade de anos encontrados: ${availableYears.length}`);
-    console.log(`Anos detectados: ${availableYears.join(', ')}`);
+    console.log(`Anos considerados: ${availableYears.join(', ')}`);
 
     for (const year of yearsToProcess) {
       console.log(`Processando ano ${year}...`);
