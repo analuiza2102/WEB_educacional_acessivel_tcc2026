@@ -15,7 +15,6 @@ const NAVIGATION_TIMEOUT_MS = 90000;
 const NAVIGATION_RETRIES = 3;
 const FIRST_ENEM_YEAR = 1998;
 const DISCOVER_YEARS_FROM_INDEX = false;
-const FALLBACK_LAST_AVAILABLE_YEAR_OFFSET = 1;
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -210,10 +209,9 @@ function pairNormalizedRows(rawLinks) {
 
 function getFallbackYears() {
   const currentYear = new Date().getFullYear();
-  const lastLikelyAvailableYear = currentYear - FALLBACK_LAST_AVAILABLE_YEAR_OFFSET;
   const years = [];
 
-  for (let year = lastLikelyAvailableYear; year >= FIRST_ENEM_YEAR; year -= 1) {
+  for (let year = currentYear; year >= FIRST_ENEM_YEAR; year -= 1) {
     years.push(year);
   }
 
@@ -361,12 +359,17 @@ async function scrapeInepEnemProvas() {
 
     for (const year of yearsToProcess) {
       console.log(`Processando ano ${year}...`);
-      const yearLinks = await collectLinksForYear(page, year);
-      const usefulLinks = yearLinks.filter(isUsefulExamLink);
+      try {
+        const yearLinks = await collectLinksForYear(page, year);
+        const usefulLinks = yearLinks.filter(isUsefulExamLink);
 
-      rawLinks.push(...usefulLinks);
-      processedYears.push(year);
-      console.log(`Links uteis encontrados no ano ${year}: ${usefulLinks.length}`);
+        rawLinks.push(...usefulLinks);
+        processedYears.push(year);
+        console.log(`Links uteis encontrados no ano ${year}: ${usefulLinks.length}`);
+      } catch (error) {
+        console.warn(`Falha ao processar o ano ${year}. Seguindo para o proximo. Motivo: ${error.message}`);
+      }
+
       await delay(500);
     }
 
