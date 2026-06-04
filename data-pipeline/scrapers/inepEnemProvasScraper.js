@@ -13,6 +13,8 @@ const YEARS_TO_SCRAPE = [];
 const DEBUG_SCREENSHOT_PATH = 'data-pipeline/debug/inep-enem-page.png';
 const NAVIGATION_TIMEOUT_MS = 90000;
 const NAVIGATION_RETRIES = 3;
+const FIRST_ENEM_YEAR = 1998;
+const DISCOVER_YEARS_FROM_INDEX = false;
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -205,57 +207,15 @@ function pairNormalizedRows(rawLinks) {
   }));
 }
 
-async function getYearTabs(page) {
-  return page.evaluate(() => {
-    const candidates = [...document.querySelectorAll('button, a, [role="tab"], li, span')]
-      .map(element => ({
-        text: (element.textContent || '').trim(),
-        tagName: element.tagName.toLowerCase(),
-        ariaControls: element.getAttribute('aria-controls'),
-        href: element.getAttribute('href'),
-        id: element.id || null
-      }))
-      .filter(item => /^\d{4}$/.test(item.text));
+function getFallbackYears() {
+  const currentYear = new Date().getFullYear();
+  const years = [];
 
-    return [...new Map(candidates.map(item => [item.text, item])).values()].sort((a, b) => Number(b.text) - Number(a.text));
-  });
-}
-
-async function activateYear(page, year) {
-  const yearText = String(year);
-
-  const clicked = await page.evaluate(targetYear => {
-    const candidates = [...document.querySelectorAll('button, a, [role="tab"]')];
-
-    for (const element of candidates) {
-      const text = (element.textContent || '').trim();
-      if (text !== targetYear) continue;
-
-      element.scrollIntoView({ behavior: 'instant', block: 'center' });
-      element.click();
-      return true;
-    }
-
-    return false;
-  }, yearText);
-
-  if (!clicked) {
-    throw new Error(`Nao foi possivel ativar a aba do ano ${year}.`);
+  for (let year = currentYear; year >= FIRST_ENEM_YEAR; year -= 1) {
+    years.push(year);
   }
 
-  await delay(800);
-  await page.waitForFunction(
-    targetYear => {
-      const bodyText = document.body.innerText || '';
-      const loadingCount = [...document.querySelectorAll('.tab-content')]
-        .filter(node => (node.textContent || '').includes('Aguarde. Carregando'))
-        .length;
-
-      return bodyText.includes(targetYear) && loadingCount < 30;
-    },
-    yearText,
-    { timeout: 10000 }
-  ).catch(() => null);
+  return years;
 }
 
 function buildYearPageUrl(year) {
@@ -265,7 +225,11 @@ function buildYearPageUrl(year) {
 async function collectLinksForYear(page, year) {
   const yearPageUrl = buildYearPageUrl(year);
 
-  await gotoWithRetry(page, yearPageUrl);
+  const response = await gotoWithRetry(page, yearPageUrl);
+  if (response && !response.ok()) {
+    console.warn(`Ano ${year} retornou status HTTP ${response.status()}. Pulando coleta desse ano.`);
+    return [];
+  }
   await delay(1200);
 
   return page.evaluate(
@@ -364,18 +328,34 @@ async function scrapeInepEnemProvas() {
   const rawLinks = [];
 
   try {
-    await gotoWithRetry(page, OFFICIAL_PAGE_URL);
-    await delay(2500);
+    let availableYears = getFallbackYears();
 
-    const detectedYears = await getYearTabs(page);
-    const availableYears = detectedYears.map(item => Number(item.text)).filter(Number.isFinite);
+    if (DISCOVER_YEARS_FROM_INDEX) {
+      try {
+        await gotoWithRetry(page, OFFICIAL_PAGE_URL);
+        await delay(2500);
+
+        availableYears = await page.evaluate(() => {
+          const candidates = [...document.querySelectorAll('button, a, [role="tab"], li, span')]
+            .map(element => Number((element.textContent || '').trim()))
+            .filter(Number.isFinite);
+
+          return [...new Set(candidates)].sort((a, b) => b - a);
+        });
+      } catch (error) {
+        console.warn(
+          `Nao foi possivel carregar a pagina indice do INEP. Usando fallback por anos conhecidos. Motivo: ${error.message}`
+        );
+      }
+    }
+
     const yearsToProcess =
       YEARS_TO_SCRAPE.length > 0
         ? YEARS_TO_SCRAPE.filter(year => availableYears.includes(year))
         : availableYears;
 
     console.log(`Quantidade de anos encontrados: ${availableYears.length}`);
-    console.log(`Anos detectados: ${availableYears.join(', ')}`);
+    console.log(`Anos considerados: ${availableYears.join(', ')}`);
 
     for (const year of yearsToProcess) {
       console.log(`Processando ano ${year}...`);
