@@ -140,4 +140,24 @@ node data-pipeline/scrapers/evBradescoScraper.js
 
 The current GitHub Actions workflow in `.github/workflows/ev-bradesco-scraper.yml` runs only the Bradesco scraper.
 
+The INEP ENEM scraper workflow lives at `.github/workflows/inep-enem-scraper.yml`.
+
+It runs:
+
+- manually with `workflow_dispatch`;
+- every Wednesday at 12:00 UTC.
+
+It uses these GitHub Secrets:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+The workflow runs:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm exec playwright install --with-deps chromium
+pnpm scrape:inep-enem
+```
+
 Never commit `.env` or `.env.local`.
