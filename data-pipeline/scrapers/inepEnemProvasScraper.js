@@ -359,12 +359,17 @@ async function scrapeInepEnemProvas() {
 
     for (const year of yearsToProcess) {
       console.log(`Processando ano ${year}...`);
-      const yearLinks = await collectLinksForYear(page, year);
-      const usefulLinks = yearLinks.filter(isUsefulExamLink);
+      try {
+        const yearLinks = await collectLinksForYear(page, year);
+        const usefulLinks = yearLinks.filter(isUsefulExamLink);
 
-      rawLinks.push(...usefulLinks);
-      processedYears.push(year);
-      console.log(`Links uteis encontrados no ano ${year}: ${usefulLinks.length}`);
+        rawLinks.push(...usefulLinks);
+        processedYears.push(year);
+        console.log(`Links uteis encontrados no ano ${year}: ${usefulLinks.length}`);
+      } catch (error) {
+        console.warn(`Falha ao processar o ano ${year}. Seguindo para o proximo. Motivo: ${error.message}`);
+      }
+
       await delay(500);
     }
 
