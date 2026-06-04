@@ -11,9 +11,34 @@ const OFFICIAL_PAGE_URL =
 const USER_AGENT = 'WebEducacionalAcessivelTCC/1.0 academic scraper';
 const YEARS_TO_SCRAPE = [];
 const DEBUG_SCREENSHOT_PATH = 'data-pipeline/debug/inep-enem-page.png';
+const NAVIGATION_TIMEOUT_MS = 90000;
+const NAVIGATION_RETRIES = 3;
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function gotoWithRetry(page, url, options = {}) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= NAVIGATION_RETRIES; attempt += 1) {
+    try {
+      return await page.goto(url, {
+        waitUntil: 'domcontentloaded',
+        timeout: NAVIGATION_TIMEOUT_MS,
+        ...options
+      });
+    } catch (error) {
+      lastError = error;
+      console.warn(`Falha ao abrir ${url} (tentativa ${attempt}/${NAVIGATION_RETRIES}): ${error.message}`);
+
+      if (attempt < NAVIGATION_RETRIES) {
+        await delay(1500 * attempt);
+      }
+    }
+  }
+
+  throw lastError;
 }
 
 function isUsefulExamLink({ title, href }) {
@@ -240,10 +265,7 @@ function buildYearPageUrl(year) {
 async function collectLinksForYear(page, year) {
   const yearPageUrl = buildYearPageUrl(year);
 
-  await page.goto(yearPageUrl, {
-    waitUntil: 'domcontentloaded',
-    timeout: 30000
-  });
+  await gotoWithRetry(page, yearPageUrl);
   await delay(1200);
 
   return page.evaluate(
@@ -342,10 +364,7 @@ async function scrapeInepEnemProvas() {
   const rawLinks = [];
 
   try {
-    await page.goto(OFFICIAL_PAGE_URL, {
-      waitUntil: 'domcontentloaded',
-      timeout: 30000
-    });
+    await gotoWithRetry(page, OFFICIAL_PAGE_URL);
     await delay(2500);
 
     const detectedYears = await getYearTabs(page);
