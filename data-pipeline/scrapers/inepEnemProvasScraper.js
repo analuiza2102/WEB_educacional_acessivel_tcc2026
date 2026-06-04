@@ -15,6 +15,7 @@ const NAVIGATION_TIMEOUT_MS = 90000;
 const NAVIGATION_RETRIES = 3;
 const FIRST_ENEM_YEAR = 1998;
 const DISCOVER_YEARS_FROM_INDEX = false;
+const FALLBACK_LAST_AVAILABLE_YEAR_OFFSET = 1;
 
 function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -209,9 +210,10 @@ function pairNormalizedRows(rawLinks) {
 
 function getFallbackYears() {
   const currentYear = new Date().getFullYear();
+  const lastLikelyAvailableYear = currentYear - FALLBACK_LAST_AVAILABLE_YEAR_OFFSET;
   const years = [];
 
-  for (let year = currentYear; year >= FIRST_ENEM_YEAR; year -= 1) {
+  for (let year = lastLikelyAvailableYear; year >= FIRST_ENEM_YEAR; year -= 1) {
     years.push(year);
   }
 
