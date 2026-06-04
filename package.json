@@ -7,7 +7,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "scrape:ev-bradesco": "node data-pipeline/scrapers/evBradescoScraper.js"
+    "scrape:ev-bradesco": "node data-pipeline/scrapers/evBradescoScraper.js",
+    "scrape:inep-enem": "node data-pipeline/scrapers/inepEnemProvasScraper.js"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -53,6 +54,7 @@
     "lucide-react": "0.487.0",
     "motion": "12.23.24",
     "next-themes": "0.4.6",
+    "playwright": "^1.60.0",
     "react": "18.3.1",
     "react-day-picker": "8.10.1",
     "react-dnd": "16.0.1",

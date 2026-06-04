@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio';
 import { fileURLToPath } from 'node:url';
+import { preserveExistingStatus } from '../utils/preserveExistingStatus.js';
 import { supabaseAdmin } from '../utils/supabaseAdmin.js';
 
 const BASE_URL = 'https://www.ev.org.br';
@@ -243,15 +244,18 @@ async function scrapeEvBradescoCourses() {
 async function saveCourses(courses) {
   if (courses.length === 0) return [];
 
+  const { rows: rowsToUpsert, preservedCount, newCount } = await preserveExistingStatus('cursos', courses);
   const { data, error } = await supabaseAdmin
     .from('cursos')
-    .upsert(courses, { onConflict: 'slug' })
+    .upsert(rowsToUpsert, { onConflict: 'slug' })
     .select();
 
   if (error) {
     throw new Error(`Erro ao salvar cursos no Supabase: ${error.message}`);
   }
 
+  console.log(`Cursos novos: ${newCount}`);
+  console.log(`Cursos com status preservado: ${preservedCount}`);
   return data ?? [];
 }
 
