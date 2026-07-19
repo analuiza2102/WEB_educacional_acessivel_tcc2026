@@ -75,7 +75,36 @@ add column if not exists last_checked_at timestamp with time zone;
 The same SQL files are available in:
 
 - `data-pipeline/sql/alter_cursos_for_scraper.sql`
+- `data-pipeline/sql/alter_cursos_for_escola_virtual_gov.sql`
 - `data-pipeline/sql/alter_provas_for_scraper.sql`
+
+## Scraper Escola Virtual de Governo
+
+Objective:
+collect free courses from [Escola Virtual de Governo](https://www.escolavirtual.gov.br/catalogo) and save them into `public.cursos`.
+
+The scraper tries to use the official catalog CSV first. If the CSV is unavailable or cannot be identified, it falls back to reading the catalog HTML pages with `fetch` and `cheerio`.
+
+Rules:
+
+- saves new courses as `pending_review`;
+- never publishes automatically;
+- preserves existing `published`, `archived` and `pending_review` statuses;
+- uses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` only in local Node.js scripts;
+- never uses the service role key in the front-end.
+
+Run:
+
+```bash
+pnpm scrape:escola-virtual-gov
+```
+
+Required environment variables:
+
+```env
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+```
 
 ## Scraper INEP ENEM Provas e Gabaritos
 
@@ -139,6 +168,25 @@ node data-pipeline/scrapers/evBradescoScraper.js
 ## Automation
 
 The current GitHub Actions workflow in `.github/workflows/ev-bradesco-scraper.yml` runs only the Bradesco scraper.
+
+The Escola Virtual de Governo scraper workflow lives at `.github/workflows/escola-virtual-gov-scraper.yml`.
+
+It runs:
+
+- manually with `workflow_dispatch`;
+- every Tuesday and Friday at 11:00 UTC.
+
+It uses these GitHub Secrets:
+
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+The workflow runs:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm scrape:escola-virtual-gov
+```
 
 The INEP ENEM scraper workflow lives at `.github/workflows/inep-enem-scraper.yml`.
 
