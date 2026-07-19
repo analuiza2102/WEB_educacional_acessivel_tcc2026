@@ -8,6 +8,7 @@
     "build": "vite build",
     "dev": "vite",
     "scrape:ev-bradesco": "node data-pipeline/scrapers/evBradescoScraper.js",
+    "scrape:escola-virtual-gov": "node data-pipeline/scrapers/escolaVirtualGovScraper.js",
     "scrape:inep-enem": "node data-pipeline/scrapers/inepEnemProvasScraper.js"
   },
   "dependencies": {
