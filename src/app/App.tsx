@@ -9,6 +9,8 @@ import { Cursos } from './pages/Cursos';
 import { BancoProvas } from './pages/BancoProvas';
 import { Sobre } from './pages/Sobre';
 import { Acessibilidade } from './pages/Acessibilidade';
+import { GestorLogin } from './pages/GestorLogin';
+import { Gestor } from './pages/Gestor';
 
 export default function App() {
   return (
@@ -34,6 +36,8 @@ export default function App() {
               <Route path="/banco-provas" element={<BancoProvas />} />
               <Route path="/sobre" element={<Sobre />} />
               <Route path="/acessibilidade" element={<Acessibilidade />} />
+              <Route path="/gestor/login" element={<GestorLogin />} />
+              <Route path="/gestor" element={<Gestor />} />
             </Routes>
           </main>
           
