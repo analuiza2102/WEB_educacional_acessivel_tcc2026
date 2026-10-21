@@ -59,6 +59,7 @@
 .high-contrast [class*='to-blue-800'],
 .high-contrast [class*='bg-blue-600'],
 .high-contrast [class*='bg-green-600'],
+.high-contrast [class*='bg-green-700'],
 .high-contrast [class*='bg-purple-600'] {
   background: #000000 !important;
   color: #ffffff !important;
@@ -115,6 +116,7 @@
 .high-contrast .feature-list svg,
 .high-contrast [class*='text-blue-600'],
 .high-contrast [class*='text-green-600'],
+.high-contrast [class*='text-green-700'],
 .high-contrast [class*='text-purple-600'],
 .high-contrast [class*='text-blue-800'],
 .high-contrast [class*='text-green-800'],
@@ -206,9 +208,11 @@
 
 .high-contrast a[class*='bg-blue-600'],
 .high-contrast a[class*='bg-green-600'],
+.high-contrast a[class*='bg-green-700'],
 .high-contrast a[class*='bg-purple-600'],
 .high-contrast button[class*='bg-blue-600'],
 .high-contrast button[class*='bg-green-600'],
+.high-contrast button[class*='bg-green-700'],
 .high-contrast button[class*='bg-purple-600'] {
   background: #ffd600 !important;
   color: #000000 !important;
@@ -217,9 +221,11 @@
 
 .high-contrast a[class*='bg-blue-600'] svg,
 .high-contrast a[class*='bg-green-600'] svg,
+.high-contrast a[class*='bg-green-700'] svg,
 .high-contrast a[class*='bg-purple-600'] svg,
 .high-contrast button[class*='bg-blue-600'] svg,
 .high-contrast button[class*='bg-green-600'] svg,
+.high-contrast button[class*='bg-green-700'] svg,
 .high-contrast button[class*='bg-purple-600'] svg,
 .high-contrast a[class*='bg-gray-200'] svg,
 .high-contrast button[class*='bg-gray-200'] svg {

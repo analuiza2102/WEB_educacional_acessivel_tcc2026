@@ -1,7 +1,20 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { BookOpen, CheckCircle, ExternalLink, GraduationCap, Search } from 'lucide-react';
+import { vestibularesService } from '../services/api';
 
 export function Home() {
+  const [enemPath, setEnemPath] = useState('/vestibulares');
+
+  useEffect(() => {
+    async function findEnem() {
+      const { data } = await vestibularesService.getAllVestibulares();
+      const enem = data.find(vestibular => vestibular.nome.trim().toLocaleUpperCase('pt-BR').startsWith('ENEM'));
+      if (enem) setEnemPath(`/vestibulares/${enem.id}`);
+    }
+    findEnem();
+  }, []);
+
   return (
     <div className="min-h-screen">
       <section
@@ -11,11 +24,11 @@ export function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <h1 id="hero-title" className="mb-6 text-3xl font-bold sm:text-4xl md:text-5xl">
-              Encontre oportunidades educacionais gratuitas de forma simples e acessivel
+              Encontre oportunidades educacionais gratuitas de forma simples e acessível
             </h1>
-            <p className="hero-lead mb-10 text-lg text-blue-100 sm:text-xl">
-              Centralizamos informacoes sobre vestibulares publicos e cursos gratuitos para facilitar
-              seu acesso a educacao de qualidade.
+            <p className="hero-lead mb-10 text-lg text-white sm:text-xl">
+              Centralizamos informações sobre vestibulares públicos e cursos gratuitos para facilitar
+              seu acesso à educação de qualidade.
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Link
@@ -27,7 +40,7 @@ export function Home() {
               </Link>
               <Link
                 to="/cursos"
-                className="hero-secondary-cta inline-flex items-center justify-center gap-2 rounded-lg bg-green-500 px-8 py-4 text-lg font-medium text-white transition-colors hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-300"
+                className="hero-secondary-cta inline-flex items-center justify-center gap-2 rounded-lg bg-green-700 px-8 py-4 text-lg font-medium text-white transition-colors hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300"
               >
                 <BookOpen className="h-6 w-6" aria-hidden="true" />
                 Quero fazer Curso Gratuito
@@ -54,7 +67,7 @@ export function Home() {
                 <Search className="step-icon mx-auto mb-4 h-12 w-12 text-blue-600" aria-hidden="true" />
                 <h3 className="card-title mb-2 text-xl font-bold text-gray-900">Escolha</h3>
                 <p className="card-body text-gray-600">
-                  Navegue por vestibulares publicos ou cursos gratuitos usando nossos filtros acessiveis.
+                  Navegue por vestibulares públicos ou cursos gratuitos usando nossos filtros acessíveis.
                 </p>
               </div>
             </div>
@@ -70,7 +83,7 @@ export function Home() {
                 <BookOpen className="step-icon mx-auto mb-4 h-12 w-12 text-blue-600" aria-hidden="true" />
                 <h3 className="card-title mb-2 text-xl font-bold text-gray-900">Entenda os Requisitos</h3>
                 <p className="card-body text-gray-600">
-                  Veja um guia passo a passo claro sobre documentos, datas e como solicitar isencao.
+                  Veja um guia passo a passo claro sobre documentos, datas e como solicitar isenção.
                 </p>
               </div>
             </div>
@@ -86,7 +99,7 @@ export function Home() {
                 <ExternalLink className="step-icon mx-auto mb-4 h-12 w-12 text-blue-600" aria-hidden="true" />
                 <h3 className="card-title mb-2 text-xl font-bold text-gray-900">Acesse o Link Oficial</h3>
                 <p className="card-body text-gray-600">
-                  Clique no botao para ir direto ao site oficial e realizar sua inscricao com seguranca.
+                  Clique no botão para ir direto ao site oficial e realizar sua inscrição com segurança.
                 </p>
               </div>
             </div>
@@ -110,20 +123,20 @@ export function Home() {
               </p>
               <ul className="feature-list mb-6 space-y-2 text-sm text-gray-700">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
-                  <span>Isencao para baixa renda</span>
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
+                  <span>Isenção da taxa de inscrição</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Recursos de acessibilidade</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Vale para SISU, PROUNI e FIES</span>
                 </li>
               </ul>
               <Link
-                to="/vestibulares/1"
+                to={enemPath}
                 className="feature-link inline-block w-full rounded-lg bg-blue-600 px-6 py-3 text-center font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300"
               >
                 Ver detalhes do ENEM
@@ -136,20 +149,20 @@ export function Home() {
               </div>
               <h3 className="card-title mb-2 text-xl font-bold text-gray-900">Vestibulares Estaduais</h3>
               <p className="card-body mb-4 text-gray-600">
-                Vestibulares de universidades estaduais como USP, UNICAMP e UNESP oferecem ensino de excelencia.
+                Vestibulares de universidades estaduais como USP, UNICAMP e UNESP oferecem ensino de excelência.
               </p>
               <ul className="feature-list mb-6 space-y-2 text-sm text-gray-700">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
-                  <span>Ensino publico e gratuito</span>
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
+                  <span>Ensino público e gratuito</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
-                  <span>Atendimento especial disponivel</span>
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
+                  <span>Atendimento especial disponível</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
-                  <span>Diversos cursos disponiveis</span>
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
+                  <span>Diversos cursos disponíveis</span>
                 </li>
               </ul>
               <Link
@@ -166,25 +179,25 @@ export function Home() {
               </div>
               <h3 className="card-title mb-2 text-xl font-bold text-gray-900">Cursos Gratuitos Online</h3>
               <p className="card-body mb-4 text-gray-600">
-                Milhares de cursos gratuitos em diversas areas: tecnologia, saude, administracao e muito mais.
+                Milhares de cursos gratuitos em diversas áreas: tecnologia, saúde, administração e muito mais.
               </p>
               <ul className="feature-list mb-6 space-y-2 text-sm text-gray-700">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>100% gratuitos com certificado</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Estude no seu ritmo</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Plataformas renomadas</span>
                 </li>
               </ul>
               <Link
                 to="/cursos"
-                className="feature-link inline-block w-full rounded-lg bg-green-600 px-6 py-3 text-center font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300"
+                className="feature-link inline-block w-full rounded-lg bg-green-700 px-6 py-3 text-center font-medium text-white transition-colors hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300"
               >
                 Explorar cursos gratuitos
               </Link>
@@ -196,10 +209,10 @@ export function Home() {
       <section className="cta-section bg-blue-600 py-16 text-white" aria-labelledby="cta-title">
         <div className="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 id="cta-title" className="mb-4 text-3xl font-bold">
-            Pronto para comecar sua jornada educacional?
+            Pronto para começar sua jornada educacional?
           </h2>
-          <p className="cta-lead mb-8 text-lg text-blue-100">
-            Explore todas as oportunidades disponiveis e de o proximo passo rumo ao seu futuro.
+          <p className="cta-lead mb-8 text-lg text-white">
+            Explore todas as oportunidades disponíveis e dê o próximo passo rumo ao seu futuro.
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
             <Link
@@ -210,7 +223,7 @@ export function Home() {
             </Link>
             <Link
               to="/cursos"
-              className="hero-secondary-cta inline-flex items-center justify-center gap-2 rounded-lg bg-green-500 px-8 py-4 font-medium text-white transition-colors hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-300"
+              className="hero-secondary-cta inline-flex items-center justify-center gap-2 rounded-lg bg-green-700 px-8 py-4 font-medium text-white transition-colors hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300"
             >
               Ver Cursos
             </Link>

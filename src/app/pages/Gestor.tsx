@@ -206,7 +206,7 @@ export function Gestor() {
         <div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <div>
             <h1 className="text-3xl font-bold sm:text-4xl">Painel Gestor</h1>
-            <p className="mt-2 text-blue-100">
+            <p className="mt-2 text-white">
               {profile?.nome || userEmail} · perfil {profile?.role}
             </p>
           </div>

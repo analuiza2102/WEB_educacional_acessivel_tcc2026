@@ -2,6 +2,25 @@ import { useParams, Link } from 'react-router';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ExternalLink, Calendar, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { vestibularesService, Vestibular } from '../services/api';
+import { ExpandableText } from '../components/ExpandableText';
+
+function documentLinkLabel(value: string) {
+  try {
+    const fileName = decodeURIComponent(new URL(value).pathname.split('/').filter(Boolean).pop() ?? value);
+    const extension = fileName.match(/\.([a-z0-9]{2,5})$/i)?.[1]?.toUpperCase();
+    const title = fileName
+      .replace(/\.[^.]+$/, '')
+      .replace(/^(?:fuvest|enem|unesp)\d{4}[-_]*/i, '')
+      .replace(/[-_]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLocaleLowerCase('pt-BR');
+    const readableTitle = title ? title.charAt(0).toLocaleUpperCase('pt-BR') + title.slice(1) : 'Documento';
+    return extension ? `${readableTitle} (${extension})` : readableTitle;
+  } catch {
+    return value;
+  }
+}
 
 export function VestibularDetail() {
   const { id } = useParams();
@@ -49,13 +68,13 @@ export function VestibularDetail() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
             to="/vestibulares"
-            className="inline-flex items-center gap-2 text-blue-100 hover:text-white mb-4 focus:outline-none focus:ring-2 focus:ring-white rounded px-2 py-1"
+            className="inline-flex items-center gap-2 text-white hover:text-white mb-4 focus:outline-none focus:ring-2 focus:ring-white rounded px-2 py-1"
           >
             <ArrowLeft className="w-5 h-5" aria-hidden="true" />
             Voltar para vestibulares
           </Link>
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">{vestibular.nome}</h1>
-          <p className="text-lg text-blue-100">{vestibular.descricao}</p>
+          <ExpandableText className="text-lg text-white">{vestibular.descricao}</ExpandableText>
         </div>
       </div>
 
@@ -81,11 +100,11 @@ export function VestibularDetail() {
           </div>
           {vestibular.isencaoDisponivel && (
             <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 flex items-start gap-3">
-              <CheckCircle className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
+              <CheckCircle className="w-6 h-6 text-green-700 flex-shrink-0 mt-0.5" aria-hidden="true" />
               <div>
                 <p className="font-medium text-green-900 mb-1">Isenção de taxa disponível</p>
                 <p className="text-sm text-green-800">
-                  Este vestibular oferece isenção da taxa de inscrição para pessoas de baixa renda. Veja os requisitos no passo a passo abaixo.
+                  Este vestibular oferece isenção da taxa de inscrição para candidatos que atendem aos critérios do edital. Veja os requisitos no passo a passo abaixo.
                 </p>
               </div>
             </div>
@@ -98,18 +117,22 @@ export function VestibularDetail() {
             <CheckCircle className="w-6 h-6 text-blue-600" aria-hidden="true" />
             Passo a Passo para Inscrição
           </h2>
-          <ol className="space-y-4">
-            {vestibular.passos.map((passo, index) => (
-              <li key={index} className="flex gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold" aria-hidden="true">
-                  {index + 1}
-                </div>
-                <div className="flex-1 pt-1">
-                  <p className="text-gray-900">{passo}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          {vestibular.passos.length > 0 ? (
+            <ol className="space-y-4">
+              {vestibular.passos.map((passo, index) => (
+                <li key={index} className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold" aria-hidden="true">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <p className="text-gray-900">{passo}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-gray-700">Consulte o passo a passo no site oficial do vestibular.</p>
+          )}
         </section>
 
         {/* Documentos */}
@@ -121,8 +144,20 @@ export function VestibularDetail() {
           <ul className="space-y-3">
             {vestibular.documentos.map((doc, index) => (
               <li key={index} className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                <span className="text-gray-900">{doc}</span>
+                <CheckCircle className="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                {/^https?:\/\//i.test(doc) ? (
+                  <a
+                    href={doc}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${documentLinkLabel(doc)} — abre em nova aba`}
+                    className="text-blue-700 underline underline-offset-2 focus:outline-none focus:ring-4 focus:ring-blue-300"
+                  >
+                    {documentLinkLabel(doc)}
+                  </a>
+                ) : (
+                  <span className="text-gray-900">{doc}</span>
+                )}
               </li>
             ))}
           </ul>
@@ -170,7 +205,7 @@ export function VestibularDetail() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {vestibular.acessibilidade.map((recurso, index) => (
                 <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" aria-hidden="true" />
+                  <CheckCircle className="w-5 h-5 text-green-700 flex-shrink-0" aria-hidden="true" />
                   <span className="text-gray-900">{recurso}</span>
                 </div>
               ))}
@@ -186,7 +221,7 @@ export function VestibularDetail() {
         {/* CTA - Site Oficial */}
         <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Pronto para se inscrever?</h2>
-          <p className="text-blue-100 mb-6">
+          <p className="text-white mb-6">
             Acesse o site oficial para realizar sua inscrição de forma segura
           </p>
           <a
@@ -198,7 +233,7 @@ export function VestibularDetail() {
             Acessar site oficial
             <ExternalLink className="w-6 h-6" aria-hidden="true" />
           </a>
-          <p className="mt-4 text-sm text-blue-100">
+          <p className="mt-4 text-sm text-white">
             Você será redirecionado para o site oficial
           </p>
         </div>

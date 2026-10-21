@@ -6,7 +6,7 @@ export function Sobre() {
       <div className="bg-blue-600 text-white py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">Sobre o EDUCA ACESSO</h1>
-          <p className="text-lg text-blue-100">
+          <p className="text-lg text-white">
             Democratizando o acesso à educação de qualidade no Brasil
           </p>
         </div>
@@ -32,7 +32,7 @@ export function Sobre() {
         <section className="bg-white rounded-lg border-2 border-gray-200 p-8 mb-8" aria-labelledby="fazemos-title">
           <div className="flex items-start gap-4 mb-4">
             <div className="bg-green-100 p-3 rounded-lg">
-              <Heart className="w-8 h-8 text-green-600" aria-hidden="true" />
+              <Heart className="w-8 h-8 text-green-700" aria-hidden="true" />
             </div>
             <div className="flex-1">
               <h2 id="fazemos-title" className="text-2xl font-bold text-gray-900 mb-4">
@@ -71,7 +71,7 @@ export function Sobre() {
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-bold text-gray-900 mb-2">Estudantes de Baixa Renda</h3>
+                    <h3 className="font-bold text-gray-900 mb-2">Quem Busca Isenção de Taxa</h3>
                     <p className="text-sm">
                       Facilita o acesso a informações sobre isenções de taxa e programas de apoio.
                     </p>
@@ -141,7 +141,7 @@ export function Sobre() {
 
         <div className="bg-gradient-to-br from-blue-600 to-blue-800 text-white rounded-lg p-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Projeto Acadêmico</h2>
-          <p className="text-blue-100 max-w-2xl mx-auto">
+          <p className="text-white max-w-2xl mx-auto">
             Este site foi desenvolvido exclusivamente para fins acadêmicos, como parte de um Trabalho de Conclusão de Curso. As informações exibidas têm finalidade demonstrativa e educacional para apresentação do TCC.
           </p>
         </div>

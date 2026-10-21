@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { Filter, ExternalLink, Calendar, CheckCircle } from 'lucide-react';
 import { vestibularesService, Vestibular } from '../services/api';
+import { ExpandableText } from '../components/ExpandableText';
 
 export function Vestibulares() {
   const [vestibulares, setVestibulares] = useState<Vestibular[]>([]);
@@ -36,7 +37,7 @@ export function Vestibulares() {
       <div className="bg-blue-600 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">Vestibulares Públicos</h1>
-          <p className="text-lg text-blue-100">
+          <p className="text-lg text-white">
             Encontre vestibulares gratuitos e acessíveis com guias passo a passo
           </p>
         </div>
@@ -203,7 +204,7 @@ function VestibularCard({ vestibular }: { vestibular: Vestibular }) {
           <Calendar className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-600" aria-hidden="true" />
           <span className="font-medium">{vestibular.prazo}</span>
         </div>
-        <p className="text-gray-600">{vestibular.descricao}</p>
+        <ExpandableText className="text-gray-600">{vestibular.descricao}</ExpandableText>
       </div>
 
       {vestibular.acessibilidade.length > 0 && (
