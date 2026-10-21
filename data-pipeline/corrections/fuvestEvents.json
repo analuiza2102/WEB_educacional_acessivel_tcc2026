@@ -1,0 +1,11 @@
+[
+  {
+    "ano": 2027,
+    "event_key": "locais-primeira-fase",
+    "expected_date": "2026-10-21",
+    "corrected_date": "2026-10-20",
+    "hour": 12,
+    "minute": 0,
+    "source_url": "https://www.fuvest.br/fuvest-2027-fuvest-antecipa-em-um-dia-a-divulgacao-dos-locais-das-provas/"
+  }
+]
