@@ -19,14 +19,14 @@ export function ExpandableText({
   useEffect(() => {
     const measure = () => {
       const paragraph = paragraphRef.current;
-      if (!paragraph) return;
-      setTruncated(paragraph.scrollHeight > paragraph.clientHeight);
+      if (!paragraph || expanded) return;
+      setTruncated(paragraph.scrollHeight > paragraph.clientHeight + 1);
     };
 
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [children]);
+  }, [children, expanded]);
 
   return (
     <>
@@ -37,7 +37,7 @@ export function ExpandableText({
       >
         {children}
       </p>
-      {truncated && (
+      {(truncated || expanded) && (
         <button
           type="button"
           aria-expanded={expanded}
