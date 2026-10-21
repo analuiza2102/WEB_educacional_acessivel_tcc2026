@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /gestor
+
+Sitemap: https://web-educacional-acessivel-tcc2026.vercel.app/sitemap.xml

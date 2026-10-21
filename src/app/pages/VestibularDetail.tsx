@@ -2,6 +2,25 @@ import { useParams, Link } from 'react-router';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ExternalLink, Calendar, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { vestibularesService, Vestibular } from '../services/api';
+import { ExpandableText } from '../components/ExpandableText';
+
+function documentLinkLabel(value: string) {
+  try {
+    const fileName = decodeURIComponent(new URL(value).pathname.split('/').filter(Boolean).pop() ?? value);
+    const extension = fileName.match(/\.([a-z0-9]{2,5})$/i)?.[1]?.toUpperCase();
+    const title = fileName
+      .replace(/\.[^.]+$/, '')
+      .replace(/^(?:fuvest|enem|unesp)\d{4}[-_]*/i, '')
+      .replace(/[-_]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLocaleLowerCase('pt-BR');
+    const readableTitle = title ? title.charAt(0).toLocaleUpperCase('pt-BR') + title.slice(1) : 'Documento';
+    return extension ? `${readableTitle} (${extension})` : readableTitle;
+  } catch {
+    return value;
+  }
+}
 
 export function VestibularDetail() {
   const { id } = useParams();
@@ -55,7 +74,7 @@ export function VestibularDetail() {
             Voltar para vestibulares
           </Link>
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">{vestibular.nome}</h1>
-          <p className="text-lg text-white">{vestibular.descricao}</p>
+          <ExpandableText className="text-lg text-white">{vestibular.descricao}</ExpandableText>
         </div>
       </div>
 
@@ -98,18 +117,22 @@ export function VestibularDetail() {
             <CheckCircle className="w-6 h-6 text-blue-600" aria-hidden="true" />
             Passo a Passo para Inscrição
           </h2>
-          <ol className="space-y-4">
-            {vestibular.passos.map((passo, index) => (
-              <li key={index} className="flex gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold" aria-hidden="true">
-                  {index + 1}
-                </div>
-                <div className="flex-1 pt-1">
-                  <p className="text-gray-900">{passo}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
+          {vestibular.passos.length > 0 ? (
+            <ol className="space-y-4">
+              {vestibular.passos.map((passo, index) => (
+                <li key={index} className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold" aria-hidden="true">
+                    {index + 1}
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <p className="text-gray-900">{passo}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <p className="text-gray-700">Consulte o passo a passo no site oficial do vestibular.</p>
+          )}
         </section>
 
         {/* Documentos */}
@@ -122,7 +145,19 @@ export function VestibularDetail() {
             {vestibular.documentos.map((doc, index) => (
               <li key={index} className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                <span className="text-gray-900">{doc}</span>
+                {/^https?:\/\//i.test(doc) ? (
+                  <a
+                    href={doc}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${documentLinkLabel(doc)} — abre em nova aba`}
+                    className="text-blue-700 underline underline-offset-2 focus:outline-none focus:ring-4 focus:ring-blue-300"
+                  >
+                    {documentLinkLabel(doc)}
+                  </a>
+                ) : (
+                  <span className="text-gray-900">{doc}</span>
+                )}
               </li>
             ))}
           </ul>
