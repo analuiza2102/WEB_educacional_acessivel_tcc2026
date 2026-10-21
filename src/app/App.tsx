@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router';
+import { useLayoutEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router';
 import { AccessibilityProvider } from './contexts/AccessibilityContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
@@ -12,9 +13,20 @@ import { Acessibilidade } from './pages/Acessibilidade';
 import { GestorLogin } from './pages/GestorLogin';
 import { Gestor } from './pages/Gestor';
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AccessibilityProvider>
         <div className="min-h-screen flex flex-col">
           {/* Skip to main content link for keyboard navigation */}
