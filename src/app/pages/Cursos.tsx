@@ -32,10 +32,10 @@ export function Cursos() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-green-600 text-white py-12">
+      <div className="bg-green-700 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">Cursos Gratuitos Online</h1>
-          <p className="text-lg text-green-100">
+          <p className="text-lg text-white">
             Milhares de cursos gratuitos com certificado em diversas áreas do conhecimento
           </p>
         </div>
@@ -77,7 +77,7 @@ export function Cursos() {
                     onClick={() => setSelectedArea(area)}
                     className={`px-6 py-3 rounded-lg font-medium transition-colors focus:outline-none focus:ring-4 focus:ring-green-500 ${
                       selectedArea === area
-                        ? 'bg-green-600 text-white'
+                        ? 'bg-green-700 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                     aria-pressed={selectedArea === area}
@@ -114,7 +114,7 @@ export function Cursos() {
                 setSearchTerm('');
                 setSelectedArea('Todas');
               }}
-              className="text-green-600 hover:text-green-700 font-medium focus:outline-none focus:ring-2 focus:ring-green-500 rounded px-2 py-1"
+              className="text-green-700 hover:text-green-800 font-medium focus:outline-none focus:ring-2 focus:ring-green-500 rounded px-2 py-1"
             >
               Limpar busca e filtros
             </button>
@@ -167,7 +167,7 @@ export function Cursos() {
                   href={curso.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors focus:outline-none focus:ring-4 focus:ring-green-300"
+                  className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 bg-green-700 text-white rounded-lg font-medium hover:bg-green-800 transition-colors focus:outline-none focus:ring-4 focus:ring-green-300"
                 >
                   Acessar curso
                   <ExternalLink className="w-5 h-5" aria-hidden="true" />

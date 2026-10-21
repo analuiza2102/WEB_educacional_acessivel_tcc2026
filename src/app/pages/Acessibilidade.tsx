@@ -55,7 +55,7 @@ export function Acessibilidade() {
             <div className="bg-white rounded-lg border-2 border-gray-200 p-6">
               <div className="flex items-start gap-4">
                 <div className="bg-green-100 p-3 rounded-lg flex-shrink-0">
-                  <Keyboard className="w-6 h-6 text-green-600" aria-hidden="true" />
+                  <Keyboard className="w-6 h-6 text-green-700" aria-hidden="true" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-gray-900 mb-2">

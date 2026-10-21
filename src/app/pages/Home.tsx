@@ -13,7 +13,7 @@ export function Home() {
             <h1 id="hero-title" className="mb-6 text-3xl font-bold sm:text-4xl md:text-5xl">
               Encontre oportunidades educacionais gratuitas de forma simples e acessivel
             </h1>
-            <p className="hero-lead mb-10 text-lg text-blue-100 sm:text-xl">
+            <p className="hero-lead mb-10 text-lg text-white sm:text-xl">
               Centralizamos informacoes sobre vestibulares publicos e cursos gratuitos para facilitar
               seu acesso a educacao de qualidade.
             </p>
@@ -27,7 +27,7 @@ export function Home() {
               </Link>
               <Link
                 to="/cursos"
-                className="hero-secondary-cta inline-flex items-center justify-center gap-2 rounded-lg bg-green-500 px-8 py-4 text-lg font-medium text-white transition-colors hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-300"
+                className="hero-secondary-cta inline-flex items-center justify-center gap-2 rounded-lg bg-green-700 px-8 py-4 text-lg font-medium text-white transition-colors hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300"
               >
                 <BookOpen className="h-6 w-6" aria-hidden="true" />
                 Quero fazer Curso Gratuito
@@ -110,15 +110,15 @@ export function Home() {
               </p>
               <ul className="feature-list mb-6 space-y-2 text-sm text-gray-700">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Isencao para baixa renda</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Recursos de acessibilidade</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Vale para SISU, PROUNI e FIES</span>
                 </li>
               </ul>
@@ -140,15 +140,15 @@ export function Home() {
               </p>
               <ul className="feature-list mb-6 space-y-2 text-sm text-gray-700">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Ensino publico e gratuito</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Atendimento especial disponivel</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Diversos cursos disponiveis</span>
                 </li>
               </ul>
@@ -170,21 +170,21 @@ export function Home() {
               </p>
               <ul className="feature-list mb-6 space-y-2 text-sm text-gray-700">
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>100% gratuitos com certificado</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Estude no seu ritmo</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-700" aria-hidden="true" />
                   <span>Plataformas renomadas</span>
                 </li>
               </ul>
               <Link
                 to="/cursos"
-                className="feature-link inline-block w-full rounded-lg bg-green-600 px-6 py-3 text-center font-medium text-white transition-colors hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300"
+                className="feature-link inline-block w-full rounded-lg bg-green-700 px-6 py-3 text-center font-medium text-white transition-colors hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300"
               >
                 Explorar cursos gratuitos
               </Link>
@@ -198,7 +198,7 @@ export function Home() {
           <h2 id="cta-title" className="mb-4 text-3xl font-bold">
             Pronto para comecar sua jornada educacional?
           </h2>
-          <p className="cta-lead mb-8 text-lg text-blue-100">
+          <p className="cta-lead mb-8 text-lg text-white">
             Explore todas as oportunidades disponiveis e de o proximo passo rumo ao seu futuro.
           </p>
           <div className="flex flex-col justify-center gap-4 sm:flex-row">
@@ -210,7 +210,7 @@ export function Home() {
             </Link>
             <Link
               to="/cursos"
-              className="hero-secondary-cta inline-flex items-center justify-center gap-2 rounded-lg bg-green-500 px-8 py-4 font-medium text-white transition-colors hover:bg-green-600 focus:outline-none focus:ring-4 focus:ring-green-300"
+              className="hero-secondary-cta inline-flex items-center justify-center gap-2 rounded-lg bg-green-700 px-8 py-4 font-medium text-white transition-colors hover:bg-green-800 focus:outline-none focus:ring-4 focus:ring-green-300"
             >
               Ver Cursos
             </Link>
