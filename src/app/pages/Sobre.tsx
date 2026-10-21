@@ -71,7 +71,7 @@ export function Sobre() {
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-bold text-gray-900 mb-2">Estudantes de Baixa Renda</h3>
+                    <h3 className="font-bold text-gray-900 mb-2">Quem Busca Isenção de Taxa</h3>
                     <p className="text-sm">
                       Facilita o acesso a informações sobre isenções de taxa e programas de apoio.
                     </p>

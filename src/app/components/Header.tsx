@@ -11,7 +11,7 @@ export function Header() {
   const isActive = (path: string) => location.pathname === path;
 
   const navLinks = [
-    { path: '/', label: 'Inicio' },
+    { path: '/', label: 'Início' },
     { path: '/vestibulares', label: 'Vestibulares' },
     { path: '/cursos', label: 'Cursos Gratuitos' },
     { path: '/banco-provas', label: 'Banco de Provas' },
@@ -33,7 +33,7 @@ export function Header() {
             <span className="brand-text text-xl font-bold text-gray-900">EDUCA ACESSO</span>
           </Link>
 
-          <nav className="hidden items-center gap-6 md:flex" aria-label="Navegacao principal">
+          <nav className="hidden items-center gap-6 md:flex" aria-label="Navegação principal">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -73,7 +73,7 @@ export function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <nav className="mobile-nav border-t border-gray-200 py-4 md:hidden" aria-label="Navegacao mobile">
+          <nav className="mobile-nav border-t border-gray-200 py-4 md:hidden" aria-label="Navegação mobile">
             {navLinks.map((link) => (
               <Link
                 key={link.path}

@@ -85,7 +85,7 @@ export function VestibularDetail() {
               <div>
                 <p className="font-medium text-green-900 mb-1">Isenção de taxa disponível</p>
                 <p className="text-sm text-green-800">
-                  Este vestibular oferece isenção da taxa de inscrição para pessoas de baixa renda. Veja os requisitos no passo a passo abaixo.
+                  Este vestibular oferece isenção da taxa de inscrição para candidatos que atendem aos critérios do edital. Veja os requisitos no passo a passo abaixo.
                 </p>
               </div>
             </div>
