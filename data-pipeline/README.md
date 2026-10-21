@@ -121,6 +121,31 @@ frontend.
 Datas sem horário explícito são registradas como 12h em
 `America/Sao_Paulo`; horários publicados pela FUVEST são mantidos nesse fuso.
 
+## Scraper UNESP
+
+Fonte oficial da edição: https://www.vunesp.com.br/VNSP2514. A aba pública
+"Editais e Documentos" é carregada de `documento.vunesp.com.br`. O scraper
+identifica o Manual do Candidato da edição, extrai o calendário do PDF com
+`pdftotext` (Poppler) e salva títulos e URLs dos documentos oficiais.
+
+```bash
+node data-pipeline/tests/unespScraper.test.js
+pnpm scrape:unesp --dry-run  # lê as fontes oficiais sem escrever no banco
+pnpm scrape:unesp            # grava no Supabase
+```
+
+Use as mesmas migrações SQL e variáveis de ambiente descritas para a FUVEST.
+A página atual da Vunesp prevalece para o prazo de inscrições; se ela divergir
+do manual, é obrigatório haver um aviso de prorrogação com data e horário
+compatíveis. Outras divergências interrompem a coleta antes da gravação.
+O registro entra como `pending_review`; um status editorial existente é
+preservado. O `slug`, a chave dos eventos e a URL dos documentos evitam
+registros duplicados em novas execuções. A isenção integral é tratada como
+encerrada após o prazo, enquanto a redução de 75% para estudantes elegíveis
+permanece apenas na descrição oficial da página. Datas do calendário sem
+horário explícito são registradas ao meio-dia de São Paulo para apresentação;
+períodos de pedido de isenção/redução cobrem o dia civil completo.
+
 ## Scraper Escola Virtual de Governo
 
 Objective:
@@ -258,5 +283,11 @@ FUVEST parser, then runs `pnpm scrape:fuvest`. The two FUVEST SQL migrations
 above must already be applied. Scheduled runs start only after the workflow
 is on the repository's default branch; a feature branch can be run manually
 for testing once GitHub recognizes the workflow.
+
+The UNESP scraper workflow lives at `.github/workflows/unesp-scraper.yml`.
+It runs manually with `workflow_dispatch` and daily at 12:41 UTC, installs
+Poppler, tests the parser, then runs `pnpm scrape:unesp`. It needs the same
+two GitHub Secrets and the vestibular SQL migrations above. Its schedule
+starts after the workflow reaches the default branch.
 
 Never commit `.env` or `.env.local`.

@@ -1,0 +1,57 @@
+name: UNESP Scraper
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '41 12 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unesp-scraper
+  cancel-in-progress: false
+
+jobs:
+  scrape-unesp:
+    name: Atualizar UNESP
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: '11.0.9'
+          run_install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install PDF text extractor
+        run: sudo apt-get update && sudo apt-get install -y poppler-utils
+
+      - name: Test UNESP parser
+        run: node data-pipeline/tests/unespScraper.test.js
+
+      - name: Validate required secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          test -n "$SUPABASE_URL" || { echo 'SUPABASE_URL is missing'; exit 1; }
+          test -n "$SUPABASE_SERVICE_ROLE_KEY" || { echo 'SUPABASE_SERVICE_ROLE_KEY is missing'; exit 1; }
+
+      - name: Run UNESP scraper
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: pnpm scrape:unesp
