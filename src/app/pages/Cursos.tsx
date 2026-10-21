@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, ExternalLink, Clock, Award } from 'lucide-react';
 import { cursosService, Curso } from '../services/api';
+import { ExpandableText } from '../components/ExpandableText';
 
 export function Cursos() {
   const [cursos, setCursos] = useState<Curso[]>([]);
@@ -125,9 +126,9 @@ export function Cursos() {
                 {/* Header */}
                 <div className="mb-4">
                   <div className="flex items-start justify-between gap-2 mb-3">
-                    <h3 className="text-xl font-bold text-gray-900 flex-1">
+                    <h2 className="text-xl font-bold text-gray-900 flex-1">
                       {curso.nome}
-                    </h3>
+                    </h2>
                     {curso.gratuito && (
                       <span className="flex-shrink-0 px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold">
                         GRATUITO
@@ -138,9 +139,9 @@ export function Cursos() {
                 </div>
 
                 {/* Description */}
-                <p className="text-gray-700 mb-4 flex-1">
+                <ExpandableText className="text-gray-700 mb-4 flex-1">
                   {curso.descricao}
-                </p>
+                </ExpandableText>
 
                 {/* Info */}
                 <div className="space-y-2 mb-4 pt-4 border-t border-gray-200">
