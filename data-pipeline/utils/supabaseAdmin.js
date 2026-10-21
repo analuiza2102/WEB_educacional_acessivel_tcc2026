@@ -1,11 +1,18 @@
-import 'dotenv/config';
+import { existsSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { config } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
+
+const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const localEnvPath = resolve(projectRoot, '.env.local');
+config({ path: existsSync(localEnvPath) ? localEnvPath : resolve(projectRoot, '.env'), quiet: true });
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl) {
-  throw new Error('Variavel SUPABASE_URL ausente. Configure no arquivo .env na raiz do projeto.');
+  throw new Error('Variavel SUPABASE_URL ausente. Configure no arquivo .env.local ou .env na raiz do projeto.');
 }
 
 if (!supabaseServiceRoleKey) {

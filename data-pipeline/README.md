@@ -78,6 +78,49 @@ The same SQL files are available in:
 - `data-pipeline/sql/alter_cursos_for_escola_virtual_gov.sql`
 - `data-pipeline/sql/alter_provas_for_scraper.sql`
 
+For FUVEST, execute `data-pipeline/sql/alter_vestibulares_for_scrapers.sql`
+and then `data-pipeline/sql/vestibular_documentos.sql` in the Supabase SQL Editor
+before running the current scraper.
+
+## Scraper FUVEST
+
+Fonte oficial: https://www.fuvest.br/vestibular-da-usp/
+
+Comando:
+
+```bash
+pnpm scrape:fuvest
+```
+
+O coletor usa somente URLs oficiais da FUVEST, identifica a edição automaticamente,
+salva seus dados em `public.vestibulares`, o cronograma estruturado em
+`public.vestibular_eventos` e os títulos e URLs das publicações em
+`public.vestibular_documentos`. O `slug` da edição e a combinação
+`vestibular_id, event_key` permitem executar o scraper novamente sem duplicar
+registros. Novos vestibulares entram como `pending_review`; decisões editoriais
+existentes, inclusive `published` e `archived`, são preservadas.
+
+PDFs não são baixados nem analisados: seus títulos e URLs oficiais são armazenados.
+As publicações são lidas somente da seção da edição correspondente.
+O calendário da página é lido do HTML com `fetch` e `cheerio`; quando não há
+eventos estruturados, o scraper interrompe antes de gravar dados incompletos.
+Correções anunciadas oficialmente, mas ainda ausentes no calendário estruturado,
+ficam em `data-pipeline/corrections/fuvestEvents.json`, com a fonte e a data antiga
+esperada. Se a FUVEST mudar a data para um terceiro valor, a coleta interrompe
+para revisão, sem sobrescrever o evento com uma correção vencida.
+
+Teste local sem gravar no banco:
+
+```bash
+node data-pipeline/tests/fuvestScraper.test.js
+```
+As variáveis `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` devem estar no
+ambiente ou no `.env` local da raiz. A chave de serviço nunca deve ir para o
+frontend.
+
+Datas sem horário explícito são registradas como 12h em
+`America/Sao_Paulo`; horários publicados pela FUVEST são mantidos nesse fuso.
+
 ## Scraper Escola Virtual de Governo
 
 Objective:
@@ -207,5 +250,13 @@ pnpm install --frozen-lockfile
 pnpm exec playwright install --with-deps chromium
 pnpm scrape:inep-enem
 ```
+
+The FUVEST scraper workflow lives at `.github/workflows/fuvest-scraper.yml`.
+It runs manually with `workflow_dispatch` and daily at 11:17 UTC. It uses
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as GitHub Secrets, checks the
+FUVEST parser, then runs `pnpm scrape:fuvest`. The two FUVEST SQL migrations
+above must already be applied. Scheduled runs start only after the workflow
+is on the repository's default branch; a feature branch can be run manually
+for testing once GitHub recognizes the workflow.
 
 Never commit `.env` or `.env.local`.
