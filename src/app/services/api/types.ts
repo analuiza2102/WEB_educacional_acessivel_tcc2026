@@ -1,8 +1,8 @@
-/**
- * API Types for EDUCA ACESSO
- * These types define the data structures used throughout the application
- * and provide a contract for future database integration
- */
+/** Data used by the public vestibular pages. */
+export interface DocumentoOficial {
+  titulo: string;
+  url: string;
+}
 
 export interface Vestibular {
   id: string;
@@ -11,13 +11,21 @@ export interface Vestibular {
   nivel: string;
   prazo: string;
   inscricoesAbertas: boolean;
+  inscricaoInicio: string | null;
+  inscricaoFim: string | null;
   isencaoDisponivel: boolean;
+  isencaoInicio: string | null;
+  isencaoFim: string | null;
+  taxaInscricao: number | null;
   acessibilidade: string[];
   descricao: string;
   passos: string[];
   documentos: string[];
+  documentosOficiais: DocumentoOficial[];
+  guiaInclusao: DocumentoOficial | null;
   datas: { evento: string; data: string }[];
   linkOficial: string;
+  inscricaoUrl: string | null;
 }
 
 export interface Curso {
