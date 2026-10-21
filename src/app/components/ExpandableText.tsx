@@ -3,9 +3,14 @@ import { useEffect, useId, useRef, useState } from 'react';
 interface ExpandableTextProps {
   children: string;
   className?: string;
+  buttonClassName?: string;
 }
 
-export function ExpandableText({ children, className = '' }: ExpandableTextProps) {
+export function ExpandableText({
+  children,
+  className = '',
+  buttonClassName = 'text-blue-700 underline underline-offset-2 hover:text-blue-900 focus:ring-blue-300',
+}: ExpandableTextProps) {
   const paragraphId = useId();
   const paragraphRef = useRef<HTMLParagraphElement>(null);
   const [expanded, setExpanded] = useState(false);
@@ -14,14 +19,14 @@ export function ExpandableText({ children, className = '' }: ExpandableTextProps
   useEffect(() => {
     const measure = () => {
       const paragraph = paragraphRef.current;
-      if (!paragraph) return;
-      setTruncated(paragraph.scrollHeight > paragraph.clientHeight);
+      if (!paragraph || expanded) return;
+      setTruncated(paragraph.scrollHeight > paragraph.clientHeight + 1);
     };
 
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [children]);
+  }, [children, expanded]);
 
   return (
     <>
@@ -32,13 +37,13 @@ export function ExpandableText({ children, className = '' }: ExpandableTextProps
       >
         {children}
       </p>
-      {truncated && (
+      {(truncated || expanded) && (
         <button
           type="button"
           aria-expanded={expanded}
           aria-controls={paragraphId}
           onClick={() => setExpanded(value => !value)}
-          className="mt-2 rounded text-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300"
+          className={`mt-2 rounded focus:outline-none focus:ring-4 ${buttonClassName}`}
         >
           {expanded ? 'Mostrar menos' : 'Ler mais'}
         </button>

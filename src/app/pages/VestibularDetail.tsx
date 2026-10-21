@@ -4,7 +4,11 @@ import { ArrowLeft, ExternalLink, Calendar, FileText, CheckCircle, AlertCircle }
 import { vestibularesService, Vestibular } from '../services/api';
 import { ExpandableText } from '../components/ExpandableText';
 
-function documentLinkLabel(value: string) {
+type VestibularDocument = string | { titulo: string; url: string };
+
+function documentLinkLabel(value: string, index: number) {
+  const fallbackLabel = `Documento oficial ${index + 1} (abre em nova aba)`;
+
   try {
     const fileName = decodeURIComponent(new URL(value).pathname.split('/').filter(Boolean).pop() ?? value);
     const extension = fileName.match(/\.([a-z0-9]{2,5})$/i)?.[1]?.toUpperCase();
@@ -15,10 +19,17 @@ function documentLinkLabel(value: string) {
       .replace(/\s+/g, ' ')
       .trim()
       .toLocaleLowerCase('pt-BR');
+    const letterCount = title.match(/[A-Za-zÀ-ÖØ-öø-ÿ]/g)?.length ?? 0;
+    const hasReadableSeparator = /[\s-]/.test(fileName);
+    const looksLikeEncodedToken = /^[A-Za-z0-9+/]+=*$/.test(fileName);
+    if (letterCount < 3 || !hasReadableSeparator || fileName.endsWith('=') || looksLikeEncodedToken) {
+      return fallbackLabel;
+    }
+
     const readableTitle = title ? title.charAt(0).toLocaleUpperCase('pt-BR') + title.slice(1) : 'Documento';
     return extension ? `${readableTitle} (${extension})` : readableTitle;
   } catch {
-    return value;
+    return fallbackLabel;
   }
 }
 
@@ -74,7 +85,12 @@ export function VestibularDetail() {
             Voltar para vestibulares
           </Link>
           <h1 className="text-3xl sm:text-4xl font-bold mb-4">{vestibular.nome}</h1>
-          <ExpandableText className="text-lg text-white">{vestibular.descricao}</ExpandableText>
+          <ExpandableText
+            className="text-lg text-white"
+            buttonClassName="text-white underline underline-offset-2 hover:text-blue-100 focus:ring-white"
+          >
+            {vestibular.descricao}
+          </ExpandableText>
         </div>
       </div>
 
@@ -142,24 +158,32 @@ export function VestibularDetail() {
             Documentos Necessários
           </h2>
           <ul className="space-y-3">
-            {vestibular.documentos.map((doc, index) => (
-              <li key={index} className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                {/^https?:\/\//i.test(doc) ? (
-                  <a
-                    href={doc}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`${documentLinkLabel(doc)} — abre em nova aba`}
-                    className="text-blue-700 underline underline-offset-2 focus:outline-none focus:ring-4 focus:ring-blue-300"
-                  >
-                    {documentLinkLabel(doc)}
-                  </a>
-                ) : (
-                  <span className="text-gray-900">{doc}</span>
-                )}
-              </li>
-            ))}
+            {(vestibular.documentos as VestibularDocument[]).map((doc, index) => {
+              const url = typeof doc === 'string' ? doc : doc.url;
+              const title = typeof doc === 'string' ? '' : doc.titulo.trim();
+              const isUrl = /^https?:\/\//i.test(url);
+              const linkLabel = title || documentLinkLabel(url, index);
+              const accessibleLinkLabel = linkLabel.replace(/ \(abre em nova aba\)$/, '');
+
+              return (
+                <li key={index} className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  {isUrl ? (
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${accessibleLinkLabel} — abre em nova aba`}
+                      className="text-blue-700 underline underline-offset-2 focus:outline-none focus:ring-4 focus:ring-blue-300"
+                    >
+                      {linkLabel}
+                    </a>
+                  ) : (
+                    <span className="text-gray-900">{title || url}</span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
           <div className="mt-6 bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
