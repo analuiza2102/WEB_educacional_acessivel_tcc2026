@@ -43,3 +43,37 @@ test('publicações oficiais incluem PDFs novos sem capturar links fora da ediç
     evento: 'Divulgação dos locais de prova da 1ª Fase', data: '20/10/2026'
   }]);
 });
+
+test('normaliza o novo portal da FUVEST usando o Guia de Jornada oficial', () => {
+  const html = `<html><head><title>FUVEST</title></head><body>
+    <div class="edital">
+      <div class="titulo">VESTIBULAR DA USP</div>
+      <div class="item"><a href="arquivos/vestibular/fuvest2027-programa-vestibular.pdf">Programa do Vestibular 2027</a></div>
+      <div class="item"><a href="arquivos/vestibular/fuvest2027-guia-inclusao.pdf">Guia de Inclusão</a></div>
+      <div class="item"><a href="arquivos/vestibular/fuvest2027-resolucao-DOE.pdf">Resolução CoG Nº 9008</a></div>
+      <div class="item"><a href="arquivos/vestibular/fuvest2027-guia-jornada.pdf">Guia de Jornada</a></div>
+    </div>
+    <div class="edital"><div class="titulo">RESIDÊNCIA MÉDICA</div>
+      <div class="item"><a href="arquivos/coreme/rm2027-edital.pdf">Documento de outro processo</a></div>
+    </div>
+  </body></html>`;
+  const guide = `Calendário
+Período de inscrições para o Vestibular 2027 17/08 (12h) até 09/10/2026 (12h)
+Publicação da coleção 17/08/2026    Divulgação dos locais de prova da 1ª Fase 21/10/2026
+Prova de conhecimentos gerais 01/11/2026
+Divulgação dos locais de prova e da lista de convocação 23/11/2026
+Prova de Português e Redação 06/12/2026
+Prova das disciplinas específicas 07/12/2026
+Primeira lista de chamada para matrícula 26/01/2027
+A taxa de inscrição é de R$ 228,00.`;
+  const { vestibular, eventos, docs } = normalizeFuvest(html, guide);
+  assert.equal(vestibular.ano, 2027);
+  assert.equal(vestibular.prazo, '17/08/2026 a 09/10/2026');
+  assert.equal(vestibular.taxa_inscricao, 228);
+  assert.equal(vestibular.manual_url, 'https://fuvest.br/arquivos/vestibular/fuvest2027-guia-jornada.pdf');
+  assert.equal(eventos.find(event => event.event_key === key).data_inicio, '2026-10-20T15:00:00.000Z');
+  assert.equal(eventos.find(event => event.event_key === 'segunda-fase-dia-2').data_inicio,
+    '2026-12-07T15:00:00.000Z');
+  assert.equal(docs.length, 4);
+  assert.ok(docs.every(doc => !doc.url.includes('coreme')));
+});

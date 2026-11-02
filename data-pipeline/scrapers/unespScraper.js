@@ -21,6 +21,7 @@ export function isOfficialUnespUrl(value) {
 }
 
 function absoluteUrl(value, base = PAGE_URL) {
+  if (!value) return null;
   try { return new URL(value, base).href; } catch { return null; }
 }
 
@@ -68,7 +69,9 @@ export function parseUnespPage(html) {
   }
   const start = clean(section.find('.apply.from').text());
   const end = clean(section.find('.apply.to').text());
-  if (!/^\d{2}\/\d{2}$/.test(start) || !/^\d{2}\/\d{2}$/.test(end)) {
+  const registrationsClosed = /Inscri[cç][oõ]es:\s*Per[ií]odo Encerrado/i.test(clean(section.text()));
+  const hasRegistrationDates = /^\d{2}\/\d{2}$/.test(start) && /^\d{2}\/\d{2}$/.test(end);
+  if (!hasRegistrationDates && !registrationsClosed) {
     throw new Error('[UNESP] Prazo de inscrição ausente na página oficial');
   }
   const description = clean(section.find('.course-description').text());
@@ -76,11 +79,13 @@ export function parseUnespPage(html) {
   const docsTab = $(`a[data-controller="projeto"][data-tabname="documento"][data-sigla="${code}"]`).first();
   const docsUrl = absoluteUrl(`/${docsTab.attr('data-controller')}/${code}/${docsTab.attr('data-tabname')}/`,
     docsTab.attr('data-host'));
-  if (!isOfficialUnespUrl(registrationUrl) || !isOfficialUnespUrl(docsUrl) ||
+  if ((registrationUrl && !isOfficialUnespUrl(registrationUrl)) || !isOfficialUnespUrl(docsUrl) ||
       new URL(docsUrl).hostname !== 'documento.vunesp.com.br') {
     throw new Error('[UNESP] URLs oficiais de inscrição/documentos não encontradas');
   }
-  return { year, code, start, end, description, registrationUrl, docsUrl };
+  return { year, code, start: hasRegistrationDates ? start : null,
+    end: hasRegistrationDates ? end : null, description, registrationUrl,
+    docsUrl, registrationsClosed };
 }
 
 export function parseUnespDocuments(html, year) {
@@ -207,10 +212,12 @@ export function normalizeUnesp(pageHtml, docsHtml, manualText, now = new Date())
   const page = parseUnespPage(pageHtml);
   const { docs, manual } = parseUnespDocuments(docsHtml, page.year);
   const manualRegistration = parseManualRegistration(manualText);
-  const pageStart = page.start.split('/').map(Number);
-  const pageEnd = page.end.split('/').map(Number);
-  if (manualRegistration.start.year !== page.year - 1 ||
-      manualRegistration.start.day !== pageStart[0] || manualRegistration.start.month !== pageStart[1]) {
+  const pageStart = page.start?.split('/').map(Number) ??
+    [manualRegistration.start.day, manualRegistration.start.month];
+  const pageEnd = page.end?.split('/').map(Number) ??
+    [manualRegistration.end.day, manualRegistration.end.month];
+  if (!page.registrationsClosed && (manualRegistration.start.year !== page.year - 1 ||
+      manualRegistration.start.day !== pageStart[0] || manualRegistration.start.month !== pageStart[1])) {
     throw new Error('[UNESP] Início das inscrições diverge do manual');
   }
   let endHour = manualRegistration.end.hour;
@@ -219,7 +226,8 @@ export function normalizeUnesp(pageHtml, docsHtml, manualText, now = new Date())
   if (notice && +notice[3] === pageEnd[0] && +notice[4] === pageEnd[1]) {
     endHour = +notice[1]; endMinute = +(notice[2] ?? 0);
   }
-  if (manualRegistration.end.day !== pageEnd[0] || manualRegistration.end.month !== pageEnd[1]) {
+  if (!page.registrationsClosed &&
+      (manualRegistration.end.day !== pageEnd[0] || manualRegistration.end.month !== pageEnd[1])) {
     if (!notice || +notice[3] !== pageEnd[0] || +notice[4] !== pageEnd[1]) {
       throw new Error('[UNESP] Novo prazo sem aviso oficial correspondente; revisão necessária');
     }
@@ -258,6 +266,24 @@ export function normalizeUnesp(pageHtml, docsHtml, manualText, now = new Date())
   vestibular.situacao = determineSituacao(vestibular, events, now);
   validateUnesp(vestibular, events, docs);
   return { vestibular, eventos: events, docs };
+}
+
+export function preserveClosedRegistration(page, vestibular, eventos, existing) {
+  if (!page.registrationsClosed || !existing?.inscricao_inicio || !existing?.inscricao_fim) return;
+  const start = new Date(existing.inscricao_inicio);
+  const end = new Date(existing.inscricao_fim);
+  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) return;
+  vestibular.inscricao_inicio = start.toISOString();
+  vestibular.inscricao_fim = end.toISOString();
+  vestibular.prazo = existing.prazo || formatRange(vestibular.inscricao_inicio, vestibular.inscricao_fim);
+  vestibular.inscricoes_abertas = false;
+  const registrationEvent = eventos.find(event => event.event_key === 'inscricoes');
+  if (registrationEvent) {
+    registrationEvent.data_inicio = vestibular.inscricao_inicio;
+    registrationEvent.data_fim = vestibular.inscricao_fim;
+    registrationEvent.descricao = 'Prazo encerrado; datas preservadas da última coleta oficial';
+  }
+  vestibular.situacao = determineSituacao(vestibular, eventos);
 }
 
 export function validateUnesp(vestibular, events, docs) {
@@ -308,9 +334,12 @@ export async function run({ dryRun = false } = {}) {
   const { error: docsTableError } = await client.from('vestibular_documentos').select('id').limit(1);
   if (docsTableError) throw new Error('[UNESP] Tabela vestibular_documentos indisponível');
   const { data: existing, error: lookupError } = await client.from('vestibulares')
-    .select('id, status').eq('slug', vestibular.slug).maybeSingle();
+    .select('id, status, inscricao_inicio, inscricao_fim, prazo').eq('slug', vestibular.slug).maybeSingle();
   if (lookupError) throw new Error(`[UNESP] Consulta falhou: ${lookupError.message}`);
-  if (existing) vestibular.status = existing.status;
+  if (existing) {
+    vestibular.status = existing.status;
+    preserveClosedRegistration(page, vestibular, eventos, existing);
+  }
   const { data: saved, error: saveError } = await client.from('vestibulares')
     .upsert(vestibular, { onConflict: 'slug' }).select('id').single();
   if (saveError) throw new Error(`[UNESP] Falha ao salvar vestibular: ${saveError.message}`);
