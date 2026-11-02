@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeUnesp, parseUnespDocuments } from '../scrapers/unespScraper.js';
+import { normalizeUnesp, parseUnespDocuments, parseUnespPage,
+  preserveClosedRegistration } from '../scrapers/unespScraper.js';
 
 const page = deadline => `<html><body>
   <section class="corner-ribbon-areaprojeto">
@@ -9,6 +10,17 @@ const page = deadline => `<html><body>
     <div class="course-informations"><span class="apply from">04/09</span><span class="apply to">${deadline}</span></div>
     <div class="course-description">ATENÇÃO: INSCRIÇÕES PRORROGADAS ATÉ AS 18H DE 26/10</div>
     <a class="apply-to-it" href="/VNSP2514/Inscricao">Inscreva-se</a>
+  </section>
+  <a data-host="https://documento.vunesp.com.br" data-controller="projeto"
+    data-tabname="documento" data-sigla="VNSP2514">Editais e Documentos</a>
+</body></html>`;
+
+const closedPage = `<html><body>
+  <section class="corner-ribbon-areaprojeto">
+    <span class="ribbon">VNSP2514</span>
+    <h3 class="course-title">Vestibular | <strong>Vestibular Unesp 2027</strong></h3>
+    <div class="course-informations"><span class="apply">Inscrições: Período Encerrado</span></div>
+    <div class="course-description">A prova da primeira fase será realizada em 22 de novembro.</div>
   </section>
   <a data-host="https://documento.vunesp.com.br" data-controller="projeto"
     data-tabname="documento" data-sigla="VNSP2514">Editais e Documentos</a>
@@ -64,4 +76,27 @@ test('interrompe coleta quando prazo muda sem aviso correspondente', () => {
 
 test('documentos exigem manual da edição correta', () => {
   assert.throws(() => parseUnespDocuments(documents, 2028), /Manual oficial da edição 2028/);
+});
+
+test('aceita página oficial depois do encerramento das inscrições', () => {
+  const pageData = parseUnespPage(closedPage);
+  assert.equal(pageData.registrationsClosed, true);
+  assert.equal(pageData.start, null);
+  assert.equal(pageData.registrationUrl, null);
+  const result = normalizeUnesp(closedPage, documents, manual, new Date('2026-11-01T15:00:00Z'));
+  assert.equal(result.vestibular.inscricao_inicio, '2026-09-04T13:00:00.000Z');
+  assert.equal(result.vestibular.inscricao_fim, '2026-10-21T02:59:00.000Z');
+});
+
+test('preserva a última prorrogação oficial quando a página passa a mostrar período encerrado', () => {
+  const pageData = parseUnespPage(closedPage);
+  const result = normalizeUnesp(closedPage, documents, manual, new Date('2026-11-01T15:00:00Z'));
+  preserveClosedRegistration(pageData, result.vestibular, result.eventos, {
+    inscricao_inicio: '2026-09-04T13:00:00.000Z',
+    inscricao_fim: '2026-10-26T21:00:00.000Z',
+    prazo: '04/09/2026 a 26/10/2026'
+  });
+  assert.equal(result.vestibular.inscricao_fim, '2026-10-26T21:00:00.000Z');
+  assert.equal(result.vestibular.inscricoes_abertas, false);
+  assert.equal(result.eventos[0].data_fim, '2026-10-26T21:00:00.000Z');
 });

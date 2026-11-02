@@ -84,7 +84,7 @@ before running the current scraper.
 
 ## Scraper FUVEST
 
-Fonte oficial: https://www.fuvest.br/vestibular-da-usp/
+Fonte oficial: https://fuvest.br/
 
 Comando:
 
@@ -100,10 +100,11 @@ salva seus dados em `public.vestibulares`, o cronograma estruturado em
 registros. Novos vestibulares entram como `pending_review`; decisões editoriais
 existentes, inclusive `published` e `archived`, são preservadas.
 
-PDFs não são baixados nem analisados: seus títulos e URLs oficiais são armazenados.
-As publicações são lidas somente da seção da edição correspondente.
-O calendário da página é lido do HTML com `fetch` e `cheerio`; quando não há
-eventos estruturados, o scraper interrompe antes de gravar dados incompletos.
+As publicações são lidas somente da seção "Vestibular da USP" do portal atual.
+O calendário é extraído do Guia de Jornada oficial com `pdftotext` (Poppler),
+inclusive quando a página principal bloqueia temporariamente o runner. Quando
+eventos obrigatórios não são encontrados, o scraper interrompe antes de gravar
+dados incompletos.
 Correções anunciadas oficialmente, mas ainda ausentes no calendário estruturado,
 ficam em `data-pipeline/corrections/fuvestEvents.json`, com a fonte e a data antiga
 esperada. Se a FUVEST mudar a data para um terceiro valor, a coleta interrompe
@@ -137,7 +138,9 @@ pnpm scrape:unesp            # grava no Supabase
 Use as mesmas migrações SQL e variáveis de ambiente descritas para a FUVEST.
 A página atual da Vunesp prevalece para o prazo de inscrições; se ela divergir
 do manual, é obrigatório haver um aviso de prorrogação com data e horário
-compatíveis. Outras divergências interrompem a coleta antes da gravação.
+compatíveis. Depois que a página passa a exibir "Período Encerrado", as datas
+do último scrape oficial são preservadas; na primeira coleta, o manual é usado
+como fallback. Outras divergências interrompem a coleta antes da gravação.
 O registro entra como `pending_review`; um status editorial existente é
 preservado. O `slug`, a chave dos eventos e a URL dos documentos evitam
 registros duplicados em novas execuções. A isenção integral é tratada como
@@ -279,8 +282,8 @@ pnpm scrape:inep-enem
 The FUVEST scraper workflow lives at `.github/workflows/fuvest-scraper.yml`.
 It runs manually with `workflow_dispatch` and daily at 11:17 UTC. It uses
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as GitHub Secrets, checks the
-FUVEST parser, then runs `pnpm scrape:fuvest`. The two FUVEST SQL migrations
-above must already be applied. Scheduled runs start only after the workflow
+FUVEST parser, installs Poppler, then runs `pnpm scrape:fuvest`. The two FUVEST
+SQL migrations above must already be applied. Scheduled runs start only after the workflow
 is on the repository's default branch; a feature branch can be run manually
 for testing once GitHub recognizes the workflow.
 

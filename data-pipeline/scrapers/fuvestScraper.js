@@ -1,8 +1,9 @@
 import { load } from 'cheerio';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-const SOURCE_URL = 'https://www.fuvest.br/vestibular-da-usp/';
+const SOURCE_URL = 'https://fuvest.br/';
 const TIME_ZONE = 'America/Sao_Paulo';
 const EVENT_CORRECTIONS = JSON.parse(readFileSync(new URL('../corrections/fuvestEvents.json', import.meta.url), 'utf8'));
 const MONTHS = {
@@ -208,13 +209,19 @@ export function applyEventCorrections(year, events) {
 }
 
 function extractDocuments($, year) {
-  const publications = $('.elementor-toggle-item').filter((_, el) => {
+  let publications = $('.elementor-toggle-item').filter((_, el) => {
     const heading = cleanText($(el).find('.elementor-tab-title').first().text());
     return new RegExp(`\\bFUVEST\\s+${year}\\b`, 'i').test(heading);
   }).first();
+  let anchors = publications.find('.elementor-tab-content a[href]');
+  if (!publications.length) {
+    publications = $('.edital').filter((_, el) =>
+      /^VESTIBULAR DA USP$/i.test(cleanText($(el).find('.titulo').first().text()))).first();
+    anchors = publications.find('.item a[href]');
+  }
   if (!publications.length) throw new Error(`[FUVEST] Publicações da edição ${year} não encontradas; nada será salvo.`);
   const docs = [];
-  for (const a of publications.find('.elementor-tab-content a[href]').toArray()) {
+  for (const a of anchors.toArray()) {
     const title = cleanText($(a).text());
     const url = makeAbsoluteUrl($(a).attr('href'));
     if (!title || !url || !isOfficialFuvestUrl(url) || !/\.pdf(?:$|[?#])/i.test(url)) continue;
@@ -226,6 +233,87 @@ function extractDocuments($, year) {
   }
   if (!unique.size) throw new Error(`[FUVEST] Nenhum PDF oficial encontrado para ${year}; nada será salvo.`);
   return [...unique.values()];
+}
+
+function detectEdition($) {
+  const title = cleanText($('title').first().text());
+  const legacy = title.match(/Vestibular da USP\s*[–-]\s*(20\d{2})/i) ??
+    cleanText($('h2').filter((_, el) => /CALEND.RIO DO VESTIBULAR/i.test($(el).text())).first().text())
+      .match(/(20\d{2})/);
+  if (legacy) return Number(legacy[1]);
+  const portal = $('.edital').filter((_, el) =>
+    /^VESTIBULAR DA USP$/i.test(cleanText($(el).find('.titulo').first().text()))).first();
+  const current = cleanText(portal.text()).match(/(?:Programa do Vestibular|FUVEST)\s+(20\d{2})/i) ??
+    portal.find('a[href]').toArray().map(a => $(a).attr('href')?.match(/fuvest(20\d{2})/i))
+      .find(Boolean);
+  return current ? Number(current[1]) : null;
+}
+
+function dateFromNumeric(value, fallbackYear, defaultHour = 12, defaultMinute = 0) {
+  const match = cleanText(value).match(/(\d{1,2})\/(\d{1,2})(?:\/(20\d{2}))?(?:\s*\((\d{1,2})h(?:(\d{2}))?\))?/i);
+  if (!match) return null;
+  return zonedIso(Number(match[3] ?? fallbackYear), Number(match[2]), Number(match[1]),
+    Number(match[4] ?? defaultHour), Number(match[5] ?? defaultMinute));
+}
+
+function findGuideDate(lines, label, year) {
+  for (let index = 0; index < lines.length; index += 1) {
+    label.lastIndex = 0;
+    const currentLine = cleanText(lines[index]);
+    const labelMatch = currentLine.match(label);
+    if (!labelMatch) continue;
+    for (let distance = 0; distance <= 3 && index + distance < lines.length; distance += 1) {
+      const line = distance === 0
+        ? currentLine.slice((labelMatch.index ?? 0) + labelMatch[0].length)
+        : cleanText(lines[index + distance]);
+      const matches = [...line.matchAll(/\b\d{1,2}\/\d{1,2}\/20\d{2}\b/g)];
+      if (matches.length) return dateFromNumeric(matches[0][0], year);
+    }
+  }
+  return null;
+}
+
+export function extractGuideCalendar(guideText, year, guideUrl) {
+  const lines = String(guideText ?? '').split(/\r?\n/);
+  const flattened = cleanText(guideText);
+  const range = flattened.match(/(\d{1,2}\/\d{1,2})(?:\/(20\d{2}))?\s*\((\d{1,2})h(?:(\d{2}))?\)\s*(?:at[eé]|a)\s*(\d{1,2}\/\d{1,2}\/20\d{2})\s*\((\d{1,2})h(?:(\d{2}))?\)/i);
+  if (!range) throw new Error('[FUVEST] Período de inscrições não encontrado no Guia de Jornada');
+  const endYear = Number(range[2] ?? range[5].slice(-4));
+  const registrationStart = dateFromNumeric(`${range[1]}/${endYear} (${range[3]}h${range[4] ?? ''})`, endYear);
+  const registrationEnd = dateFromNumeric(`${range[5]} (${range[6]}h${range[7] ?? ''})`, endYear);
+  const definitions = [
+    ['locais-primeira-fase', 'Divulgação dos locais de prova da 1ª Fase', 'calendario', /Divulga[cç][aã]o dos locais de prova(?! e da)/i],
+    ['primeira-fase', 'Primeira fase', 'prova', /Prova de conhecimentos gerais/i],
+    ['convocacao-segunda-fase', 'Convocação para a segunda fase e locais de prova', 'calendario', /Divulga[cç][aã]o dos locais de prova e da\s+lista de convoca[cç][aã]o/i],
+    ['segunda-fase-dia-1', 'Segunda fase: Português e Redação', 'prova', /Prova de Portugu[eê]s e Reda[cç][aã]o/i],
+    ['segunda-fase-dia-2', 'Segunda fase: disciplinas específicas', 'prova', /Prova das disciplinas espec[ií]ficas/i],
+    ['primeira-chamada', 'Primeira chamada para matrícula', 'resultado', /Primeira lista de chamada para\s+matr[ií]cula/i]
+  ];
+  const events = [{ event_key: 'inscricoes', titulo: 'Inscrições', tipo: 'inscricoes',
+    data_inicio: registrationStart, data_fim: registrationEnd,
+    descricao: 'Período de inscrições publicado no Guia de Jornada', ordem: 0, fonte_url: guideUrl }];
+  for (const [eventKey, title, type, label] of definitions) {
+    const date = findGuideDate(lines, label, year);
+    if (date) events.push({ event_key: eventKey, titulo: title, tipo: type,
+      data_inicio: date, data_fim: date, descricao: title, ordem: events.length, fonte_url: guideUrl });
+  }
+  for (const required of ['locais-primeira-fase', 'primeira-fase', 'segunda-fase-dia-1', 'segunda-fase-dia-2']) {
+    if (!events.some(event => event.event_key === required)) {
+      throw new Error(`[FUVEST] Evento obrigatório ausente no Guia de Jornada: ${required}`);
+    }
+  }
+  return applyEventCorrections(year, events);
+}
+
+export function extractGuideText(buffer) {
+  if (buffer.subarray(0, 5).toString() !== '%PDF-') throw new Error('[FUVEST] Guia de Jornada não é PDF');
+  const result = spawnSync('pdftotext', ['-layout', '-', '-'], {
+    input: buffer, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024
+  });
+  if (result.error || result.status !== 0 || !result.stdout) {
+    throw new Error(`[FUVEST] Falha ao ler Guia de Jornada: ${result.error?.message ?? result.stderr ?? 'sem texto'}`);
+  }
+  return result.stdout;
 }
 
 function findDocument(docs, pattern) {
@@ -282,23 +370,30 @@ function formatLegacyRange(start, end) {
   return !last || first === last ? first : `${first} a ${last}`;
 }
 
-export function normalizeFuvest(html) {
+export function normalizeFuvest(html, guideText = null, fallback = {}) {
   const $ = load(html);
-  const title = cleanText($('title').first().text());
-  const yearMatch = title.match(/Vestibular da USP\s*[–-]\s*(20\d{2})/i) ??
-    cleanText($('h2').filter((_, el) => /CALEND.RIO DO VESTIBULAR/i.test($(el).text())).first().text())
-      .match(/(20\d{2})/);
-  if (!yearMatch) throw new Error('[FUVEST] Ano da edição não detectado na página principal; nada será salvo.');
-  const ano = Number(yearMatch[1]);
+  const ano = detectEdition($) ?? fallback.year;
+  if (!ano) throw new Error('[FUVEST] Ano da edição não detectado na página principal; nada será salvo.');
   const nome = `FUVEST ${ano}`;
   const inscricaoText = cleanText($('p').filter((_, el) => /Período:\s*das\s*\d+h de \d{2}\/\d{2}\/\d{4}/i.test($(el).text())).first().text());
   const isencaoText = sectionNextText($, /ISENÇÃO DE TAXA OU REDUÇÃO/i);
   const taxaText = sectionNextText($, /TAXA DE INSCRIÇÃO/i);
-  const inscricao = parseBrazilianDateRange(inscricaoText, ano - 1);
+  let inscricao = parseBrazilianDateRange(inscricaoText, ano - 1);
   const isencao = parseBrazilianDateRange(isencaoText, ano - 1);
-  const eventos = applyEventCorrections(ano, extractCalendar($));
+  let docs;
+  try { docs = extractDocuments($, ano); } catch (error) {
+    if (!fallback.docs?.length) throw error;
+    docs = fallback.docs;
+  }
+  const guideUrl = findDocument(docs, /Guia de Jornada|Manual/i);
+  const eventos = guideText
+    ? extractGuideCalendar(guideText, ano, guideUrl)
+    : applyEventCorrections(ano, extractCalendar($));
   if (!eventos.length) throw new Error('[FUVEST] Nenhum evento estruturado encontrado; nada será salvo.');
-  const docs = extractDocuments($, ano);
+  if (guideText) {
+    const registration = eventos.find(event => event.event_key === 'inscricoes');
+    inscricao = { inicio: registration?.data_inicio ?? null, fim: registration?.data_fim ?? null };
+  }
   const registration = $('a[href]').filter((_, el) => /FAÇA AQUI A SUA INSCRIÇÃO/i.test($(el).text())).first().attr('href');
   const inscricaoUrl = makeAbsoluteUrl(registration);
   // A descrição da página pode conter trechos dinâmicos fragmentados no HTML.
@@ -313,7 +408,7 @@ export function normalizeFuvest(html) {
     datas: eventos.map(evento => ({
       evento: evento.titulo, data: formatLegacyRange(evento.data_inicio, evento.data_fim)
     })),
-    taxa_inscricao: parseMoneyBRL(taxaText),
+    taxa_inscricao: parseMoneyBRL(taxaText) ?? parseMoneyBRL(guideText),
     isencao_disponivel: periodIsOpen(isencao.inicio, isencao.fim),
     isencao_inicio: isencao.inicio, isencao_fim: isencao.fim,
     acessibilidade, edital_url: findDocument(docs, /Resolução|Edital/i),
@@ -354,7 +449,9 @@ async function admin() {
 
 export async function getExistingVestibular(slug) {
   const client = await admin();
-  const { data, error } = await client.from('vestibulares').select('id, slug, status').eq('slug', slug).maybeSingle();
+  const { data, error } = await client.from('vestibulares')
+    .select('id, slug, status, documentos, edital_url, manual_url, guia_inclusao_url')
+    .eq('slug', slug).maybeSingle();
   if (error) throw new Error(`[FUVEST] Falha ao consultar vestibular: ${error.message}`);
   return data;
 }
@@ -393,11 +490,33 @@ export async function saveVestibularDocumentos(vestibularId, documentos) {
 export async function run() {
   console.log('[FUVEST] Iniciando scraper');
   console.log(`[FUVEST] Fonte: ${SOURCE_URL}`);
-  const response = await fetch(SOURCE_URL, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; EducaAcesso/1.0)' } });
-  if (!response.ok) throw new Error(`[FUVEST] Falha HTTP ${response.status} ao carregar página`);
-  const html = await response.text();
-  console.log('[FUVEST] Página carregada');
-  const { vestibular, eventos, docs } = normalizeFuvest(html);
+  const headers = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/141.0.0.0 Safari/537.36',
+    Accept: 'text/html,application/xhtml+xml,application/pdf;q=0.9,*/*;q=0.8', 'Accept-Language': 'pt-BR,pt;q=0.9' };
+  let html = '';
+  try {
+    const response = await fetch(SOURCE_URL, { signal: AbortSignal.timeout(30000), headers });
+    if (!response.ok || !isOfficialFuvestUrl(response.url)) throw new Error(`HTTP ${response.status}`);
+    html = await response.text();
+    console.log('[FUVEST] Página carregada');
+  } catch (error) {
+    console.warn(`[FUVEST] Página principal indisponível (${error.message}); usando Guia de Jornada oficial`);
+  }
+  const portal = load(html);
+  const now = new Date();
+  const inferredYear = now.getUTCMonth() >= 3 ? now.getUTCFullYear() + 1 : now.getUTCFullYear();
+  const year = detectEdition(portal) ?? inferredYear;
+  let docs = [];
+  try { docs = extractDocuments(portal, year); } catch { /* fallback oficial abaixo */ }
+  const fallbackGuideUrl = `${SOURCE_URL}arquivos/vestibular/fuvest${year}-guia-jornada.pdf`;
+  const guideUrl = findDocument(docs, /Guia de Jornada|Manual/i) ?? fallbackGuideUrl;
+  if (!docs.length) docs = [{ title: `Guia de Jornada do Vestibular ${year}`, url: guideUrl }];
+  const guideResponse = await fetch(guideUrl, { signal: AbortSignal.timeout(30000), headers });
+  if (!guideResponse.ok || !isOfficialFuvestUrl(guideResponse.url) ||
+      !/application\/pdf/i.test(guideResponse.headers.get('content-type') ?? '')) {
+    throw new Error(`[FUVEST] Guia de Jornada indisponível: HTTP ${guideResponse.status}`);
+  }
+  const guideText = extractGuideText(Buffer.from(await guideResponse.arrayBuffer()));
+  const { vestibular, eventos, docs: normalizedDocs } = normalizeFuvest(html, guideText, { year, docs });
   validateFuvest(vestibular, eventos);
   const client = await admin();
   const { error: documentsTableError } = await client.from('vestibular_documentos').select('id').limit(1);
@@ -415,13 +534,20 @@ export async function run() {
   const existing = await getExistingVestibular(vestibular.slug);
   console.log(`[FUVEST] Registro existente: ${existing ? 'sim' : 'não'}`);
   // Nenhuma decisão editorial humana é sobrescrita, inclusive rejected.
-  if (existing) vestibular.status = existing.status;
+  if (existing) {
+    vestibular.status = existing.status;
+    const previousDocuments = Array.isArray(existing.documentos) ? existing.documentos : [];
+    vestibular.documentos = [...new Set([...previousDocuments, ...vestibular.documentos])];
+    for (const field of ['edital_url', 'manual_url', 'guia_inclusao_url']) {
+      if (!vestibular[field] && existing[field]) vestibular[field] = existing[field];
+    }
+  }
   console.log(`[FUVEST] Status preservado: ${vestibular.status}`);
   const saved = await saveVestibular(vestibular);
   console.log('[FUVEST] Vestibular salvo');
   const count = await saveVestibularEventos(saved.id, eventos);
   console.log(`[FUVEST] Eventos atualizados: ${count}`);
-  const documentsCount = await saveVestibularDocumentos(saved.id, docs);
+  const documentsCount = await saveVestibularDocumentos(saved.id, normalizedDocs);
   console.log(`[FUVEST] Documentos atualizados: ${documentsCount}`);
   console.log('[FUVEST] Finalizado');
 }
