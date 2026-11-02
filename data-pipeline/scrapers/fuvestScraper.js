@@ -259,15 +259,25 @@ function dateFromNumeric(value, fallbackYear, defaultHour = 12, defaultMinute = 
 function findGuideDate(lines, label, year) {
   for (let index = 0; index < lines.length; index += 1) {
     label.lastIndex = 0;
-    const currentLine = cleanText(lines[index]);
+    const currentLine = String(lines[index] ?? '');
     const labelMatch = currentLine.match(label);
     if (!labelMatch) continue;
-    for (let distance = 0; distance <= 3 && index + distance < lines.length; distance += 1) {
-      const line = distance === 0
-        ? currentLine.slice((labelMatch.index ?? 0) + labelMatch[0].length)
-        : cleanText(lines[index + distance]);
-      const matches = [...line.matchAll(/\b\d{1,2}\/\d{1,2}\/20\d{2}\b/g)];
-      if (matches.length) return dateFromNumeric(matches[0][0], year);
+
+    // O calendário do Guia de Jornada é diagramado em colunas. Com `pdftotext
+    // -layout`, a data do evento fica normalmente à esquerda do rótulo e uma
+    // data de outra coluna pode aparecer à direita na mesma linha. A data mais
+    // próxima horizontalmente é, portanto, a que pertence ao rótulo.
+    for (const lineDistance of [0, -1, 1, -2, 2, 3]) {
+      const candidateIndex = index + lineDistance;
+      if (candidateIndex < 0 || candidateIndex >= lines.length) continue;
+      const candidates = [...String(lines[candidateIndex]).matchAll(/\b\d{1,2}\/\d{1,2}\/20\d{2}\b/g)];
+      if (!candidates.length) continue;
+      const labelPosition = labelMatch.index ?? 0;
+      const nearest = candidates.reduce((best, candidate) => {
+        const distance = Math.abs((candidate.index ?? 0) - labelPosition);
+        return !best || distance < best.distance ? { value: candidate[0], distance } : best;
+      }, null);
+      return dateFromNumeric(nearest.value, year);
     }
   }
   return null;

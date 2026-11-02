@@ -59,12 +59,12 @@ test('normaliza o novo portal da FUVEST usando o Guia de Jornada oficial', () =>
   </body></html>`;
   const guide = `Calendário
 Período de inscrições para o Vestibular 2027 17/08 (12h) até 09/10/2026 (12h)
-Publicação da coleção 17/08/2026    Divulgação dos locais de prova da 1ª Fase 21/10/2026
-Prova de conhecimentos gerais 01/11/2026
-Divulgação dos locais de prova e da lista de convocação 23/11/2026
-Prova de Português e Redação 06/12/2026
-Prova das disciplinas específicas 07/12/2026
-Primeira lista de chamada para matrícula 26/01/2027
+23/11/2026   Divulgação dos locais de prova e da lista de convocação
+21/10/2026   Divulgação dos locais de prova da 1ª Fase          10/12/2026
+01/11/2026   Prova de conhecimentos gerais                     08/12/2026
+06/12/2026   Prova de Português e Redação
+07/12/2026   Prova das disciplinas específicas
+26/01/2027   Primeira lista de chamada para matrícula
 A taxa de inscrição é de R$ 228,00.`;
   const { vestibular, eventos, docs } = normalizeFuvest(html, guide);
   assert.equal(vestibular.ano, 2027);
